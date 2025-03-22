@@ -1,70 +1,129 @@
-# Getting Started with Create React App
+# Application de Basketball
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Une application React complète pour la gestion des matchs de basketball, des équipes, des joueurs et des statistiques, avec une visualisation des tirs sur le terrain.
 
-## Available Scripts
+![Visualisation des tirs sur le terrain](https://github.com/FlorentCupillard/basketball-app/raw/main/public/shot-chart-preview.png)
 
-In the project directory, you can run:
+## Fonctionnalités
 
-### `npm start`
+- **Visualisation des tirs sur le terrain** : Points verts pour les tirs réussis, rouges pour les manqués
+- **Gestion des équipes** : Ajout, modification et suppression d'équipes
+- **Gestion des joueurs** : Ajout, modification et suppression de joueurs avec leurs statistiques
+- **Gestion des matchs** : Création, suivi en direct et visualisation des détails des matchs
+- **Statistiques détaillées** : Suivi des points, rebonds, passes et autres statistiques par joueur et par match
+- **Interface responsive** : Adaptée aux ordinateurs, tablettes et smartphones avec menu burger
+- **Ajout de tirs en temps réel** : Possibilité d'ajouter des tirs pendant un match en les positionnant directement sur le terrain
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Prérequis
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- Node.js (version 14.0.0 ou supérieure)
+- npm (version 6.0.0 ou supérieure)
 
-### `npm test`
+## Installation
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1. **Cloner le dépôt**
 
-### `npm run build`
+```bash
+git clone https://github.com/FlorentCupillard/basketball-app.git
+cd basketball-app
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+2. **Installer les dépendances**
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+npm install
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+3. **Lancer l'application en mode développement**
 
-### `npm run eject`
+```bash
+npm start
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+L'application sera accessible à l'adresse [http://localhost:3000](http://localhost:3000).
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Structure du projet
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```
+basketball-app/
+├── public/                  # Fichiers statiques
+├── src/                     # Code source
+│   ├── components/          # Composants React
+│   │   ├── court/          # Composants liés au terrain et aux tirs
+│   │   ├── games/          # Composants liés aux matchs
+│   │   ├── players/        # Composants liés aux joueurs
+│   │   └── teams/          # Composants liés aux équipes
+│   ├── store/               # État global (Redux)
+│   │   └── slices/         # Slices Redux pour chaque entité
+│   ├── App.js               # Composant principal
+│   └── index.js             # Point d'entrée
+└── package.json             # Dépendances et scripts
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Guide d'utilisation
 
-## Learn More
+### Gestion des équipes
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+1. Accédez à la section "Équipes" via le menu principal
+2. Cliquez sur "+ Ajouter" pour créer une nouvelle équipe
+3. Remplissez le formulaire avec le nom de l'équipe et l'URL du logo
+4. Cliquez sur "Enregistrer" pour créer l'équipe
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Gestion des joueurs
 
-### Code Splitting
+1. Accédez à la section "Joueurs" via le menu principal
+2. Cliquez sur "+ Ajouter" pour créer un nouveau joueur
+3. Remplissez le formulaire avec les informations du joueur (nom, prénom, numéro, poste, équipe)
+4. Cliquez sur "Enregistrer" pour créer le joueur
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### Création d'un match
 
-### Analyzing the Bundle Size
+1. Accédez à la section "Matchs" via le menu principal
+2. Cliquez sur "+ Ajouter" pour créer un nouveau match
+3. Sélectionnez les équipes participantes (locale et visiteur)
+4. Définissez la date et l'heure du match
+5. Cliquez sur "Créer" pour enregistrer le match
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### Suivi d'un match en direct
 
-### Making a Progressive Web App
+1. Dans la liste des matchs, trouvez le match que vous souhaitez suivre
+2. Cliquez sur "Commencer" ou "Suivre en direct"
+3. Pour ajouter un tir :
+   - Sélectionnez l'équipe et le joueur
+   - Choisissez le type de tir (2 points ou 3 points)
+   - Cliquez sur "Positionner le tir"
+   - Cliquez sur le terrain à l'endroit où le tir a été effectué
+   - Indiquez si le tir est réussi ou manqué
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### Visualisation des tirs
 
-### Advanced Configuration
+1. Accédez à la section "Carte des Tirs" via le menu principal
+2. Utilisez les filtres pour sélectionner les joueurs, matchs, périodes, etc.
+3. Les tirs s'affichent sur le terrain (verts pour réussis, rouges pour manqués)
+4. Les statistiques de tir s'affichent en dessous du terrain
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## Déploiement
 
-### Deployment
+Pour déployer l'application en production :
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+```bash
+npm run build
+```
 
-### `npm run build` fails to minify
+Cette commande crée un dossier `build` avec les fichiers optimisés pour la production. Vous pouvez ensuite déployer ce dossier sur n'importe quel hébergeur statique (Netlify, Vercel, GitHub Pages, etc.).
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## Technologies utilisées
+
+- React
+- Redux (avec Redux Toolkit)
+- React Router
+- Styled Components
+- React Icons
+
+## Licence
+
+Ce projet est sous licence MIT. Voir le fichier LICENSE pour plus de détails.
+
+## Contact
+
+Pour toute question ou suggestion, n'hésitez pas à ouvrir une issue sur GitHub.
