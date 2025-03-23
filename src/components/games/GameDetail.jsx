@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useSelector } from 'react-redux';
 import { useParams, Link } from 'react-router-dom';
-import { FaArrowLeft, FaPlay, FaEdit, FaChartBar } from 'react-icons/fa';
+import { FaArrowLeft, FaPlay, FaEdit, FaChartBar, FaBasketballBall } from 'react-icons/fa';
 
 const GameDetailContainer = styled.div`
   width: 100%;

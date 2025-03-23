@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useSelector } from 'react-redux';
-import { FaBasketballBall, FaCheck, FaTimes, FaFilter, FaChartBar, FaSearch } from 'react-icons/fa';
+import { FaBasketballBall, FaCheck, FaTimes, FaFilter, FaChartBar, FaSearch, FaUsers, FaGamepad, FaClock, FaRuler } from 'react-icons/fa';
 import BasketballCourt from './BasketballCourt';
 import ShotMarker from './ShotMarker';
 
