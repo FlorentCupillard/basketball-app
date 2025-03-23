@@ -400,6 +400,16 @@ const GameEditForm = () => {
     }
   }, [game]);
   
+  // Mettre à jour l'aperçu lorsque les équipes sont sélectionnées
+  useEffect(() => {
+    if (formData.equipeLocaleId && formData.equipeVisiteurId && 
+        formData.equipeLocaleId !== formData.equipeVisiteurId) {
+      setShowPreview(true);
+    } else if (formData.equipeLocaleId && formData.equipeVisiteurId) {
+      setShowPreview(false);
+    }
+  }, [formData.equipeLocaleId, formData.equipeVisiteurId]);
+  
   // Si le match n'existe pas, afficher un message
   if (!game) {
     return (
@@ -413,16 +423,6 @@ const GameEditForm = () => {
       </FormContainer>
     );
   }
-  
-  // Mettre à jour l'aperçu lorsque les équipes sont sélectionnées
-  useEffect(() => {
-    if (formData.equipeLocaleId && formData.equipeVisiteurId && 
-        formData.equipeLocaleId !== formData.equipeVisiteurId) {
-      setShowPreview(true);
-    } else {
-      setShowPreview(false);
-    }
-  }, [formData.equipeLocaleId, formData.equipeVisiteurId]);
   
   // Gérer les changements dans le formulaire
   const handleChange = (e) => {
