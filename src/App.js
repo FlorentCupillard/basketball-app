@@ -4,12 +4,15 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { FaBars, FaTimes, FaHome, FaUsers, FaBasketballBall, FaChartBar, FaChartLine, FaPlus, FaArrowUp } from 'react-icons/fa';
 import TeamList from './components/teams/TeamList';
 import TeamCreateForm from './components/teams/TeamCreateForm';
+import TeamEditForm from './components/teams/TeamEditForm';
 import PlayerList from './components/players/PlayerList';
 import PlayerCreateForm from './components/players/PlayerCreateForm';
+import PlayerEditForm from './components/players/PlayerEditForm';
 import GameList from './components/games/GameList';
 import GameDetail from './components/games/GameDetail';
 import GameLive from './components/games/GameLive';
 import GameCreateForm from './components/games/GameCreateForm';
+import GameEditForm from './components/games/GameEditForm';
 import ShotChart from './components/court/ShotChart';
 
 // Style global pour l'application
@@ -532,10 +535,13 @@ function App() {
           } />
           <Route path="/teams" element={<TeamList />} />
           <Route path="/teams/create" element={<TeamCreateForm />} />
+          <Route path="/teams/:teamId/edit" element={<TeamEditForm />} />
           <Route path="/players" element={<PlayerList />} />
           <Route path="/players/create" element={<PlayerCreateForm />} />
+          <Route path="/players/:playerId/edit" element={<PlayerEditForm />} />
           <Route path="/games" element={<GameList />} />
           <Route path="/games/create" element={<GameCreateForm />} />
+          <Route path="/games/:gameId/edit" element={<GameEditForm />} />
           <Route path="/games/:gameId" element={<GameDetail />} />
           <Route path="/games/:gameId/live" element={<GameLive />} />
           <Route path="/stats" element={
