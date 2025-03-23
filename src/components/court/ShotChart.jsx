@@ -1,11 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useSelector } from 'react-redux';
-import { FaBasketballBall, FaCheck, FaTimes } from 'react-icons/fa';
+import { FaBasketballBall, FaCheck, FaTimes, FaFilter, FaChartBar, FaSearch } from 'react-icons/fa';
+import BasketballCourt from './BasketballCourt';
+import ShotMarker from './ShotMarker';
 
 const ShotChartContainer = styled.div`
   width: 100%;
   max-width: 100%;
+  padding: 10px;
+  
+  @media (max-width: 768px) {
+    padding: 5px;
+  }
 `;
 
 const ShotChartHeader = styled.div`
@@ -13,11 +20,16 @@ const ShotChartHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  background-color: #f5f5f5;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
+    padding: 10px;
   }
 `;
 
@@ -25,17 +37,53 @@ const ShotChartTitle = styled.h1`
   font-size: 24px;
   color: #333;
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  
+  @media (max-width: 768px) {
+    font-size: 20px;
+  }
+`;
+
+const FiltersToggle = styled.button`
+  background-color: #1a73e8;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.3s;
+  
+  &:hover {
+    background-color: #1557b0;
+  }
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: center;
+  }
 `;
 
 const FiltersContainer = styled.div`
-  display: flex;
+  display: ${props => props.isVisible ? 'flex' : 'none'};
   flex-wrap: wrap;
   gap: 15px;
   margin-bottom: 20px;
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
   
   @media (max-width: 768px) {
     flex-direction: column;
     width: 100%;
+    padding: 10px;
   }
 `;
 
@@ -52,6 +100,9 @@ const FilterLabel = styled.label`
   font-size: 14px;
   margin-bottom: 5px;
   color: #666;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 `;
 
 const FilterSelect = styled.select`
@@ -60,6 +111,13 @@ const FilterSelect = styled.select`
   border-radius: 4px;
   font-size: 14px;
   min-width: 150px;
+  background-color: white;
+  transition: border-color 0.3s;
+  
+  &:focus {
+    border-color: #1a73e8;
+    outline: none;
+  }
   
   @media (max-width: 768px) {
     width: 100%;
@@ -69,11 +127,10 @@ const FilterSelect = styled.select`
 const CourtContainer = styled.div`
   position: relative;
   width: 100%;
-  max-width: 800px;
   margin: 0 auto;
   background-color: white;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 20px;
   overflow: hidden;
   
@@ -90,6 +147,7 @@ const StatsContainer = styled.div`
   
   @media (max-width: 768px) {
     grid-template-columns: 1fr 1fr;
+    gap: 10px;
   }
 `;
 
@@ -99,41 +157,133 @@ const StatCard = styled.div`
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 15px;
   text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  @media (max-width: 768px) {
+    padding: 10px;
+  }
 `;
 
 const StatValue = styled.div`
   font-size: 24px;
   font-weight: 700;
-  color: #1a73e8;
+  color: ${props => props.color || '#1a73e8'};
   margin-bottom: 5px;
+  
+  @media (max-width: 768px) {
+    font-size: 20px;
+  }
 `;
 
 const StatLabel = styled.div`
   font-size: 14px;
   color: #666;
+  
+  @media (max-width: 768px) {
+    font-size: 12px;
+  }
 `;
 
-const LegendContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-top: 15px;
-  flex-wrap: wrap;
+const NoDataMessage = styled.div`
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+  font-style: italic;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin: 20px 0;
 `;
 
-const LegendItem = styled.div`
+const ShotTypeDistribution = styled.div`
+  margin-top: 30px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  
+  @media (max-width: 768px) {
+    padding: 15px;
+  }
+`;
+
+const ShotTypeTitle = styled.h3`
+  font-size: 18px;
+  margin: 0 0 15px 0;
+  color: #333;
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 14px;
-  color: #666;
+  gap: 8px;
+  
+  @media (max-width: 768px) {
+    font-size: 16px;
+  }
 `;
 
-const LegendMarker = styled.div`
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background-color: ${props => props.color};
+const ShotTypeGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+`;
+
+const ShotTypeCard = styled.div`
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  
+  @media (max-width: 768px) {
+    padding: 10px;
+  }
+`;
+
+const ShotTypeHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+`;
+
+const ShotTypeName = styled.div`
+  font-weight: 600;
+  color: #333;
+`;
+
+const ShotTypePercentage = styled.div`
+  font-weight: 700;
+  color: ${props => props.percentage >= 50 ? '#4CAF50' : props.percentage >= 30 ? '#FF9800' : '#F44336'};
+`;
+
+const ProgressBar = styled.div`
+  height: 8px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+`;
+
+const ProgressFill = styled.div`
+  height: 100%;
+  width: ${props => props.percentage}%;
+  background-color: ${props => props.percentage >= 50 ? '#4CAF50' : props.percentage >= 30 ? '#FF9800' : '#F44336'};
+  transition: width 0.5s ease;
+`;
+
+const ShotTypeStats = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #666;
 `;
 
 const ShotChart = () => {
@@ -149,6 +299,8 @@ const ShotChart = () => {
   const [periodFilter, setPeriodFilter] = useState('');
   const [shotTypeFilter, setShotTypeFilter] = useState('');
   const [shotResultFilter, setShotResultFilter] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [highlightedShot, setHighlightedShot] = useState(null);
   
   // Filtrer les tirs en fonction des critères
   const filteredShots = shots.filter(shot => {
@@ -166,6 +318,30 @@ const ShotChart = () => {
   const totalShots = filteredShots.length;
   const madeShots = filteredShots.filter(shot => shot.reussi).length;
   const shotPercentage = totalShots > 0 ? Math.round((madeShots / totalShots) * 100) : 0;
+  
+  // Calculer les statistiques par type de tir
+  const shotTypes = {
+    '2pts': { total: 0, made: 0, percentage: 0 },
+    '3pts': { total: 0, made: 0, percentage: 0 },
+    'lf': { total: 0, made: 0, percentage: 0 }
+  };
+  
+  filteredShots.forEach(shot => {
+    const type = shot.typeShot || '2pts';
+    if (shotTypes[type]) {
+      shotTypes[type].total++;
+      if (shot.reussi) {
+        shotTypes[type].made++;
+      }
+    }
+  });
+  
+  // Calculer les pourcentages
+  Object.keys(shotTypes).forEach(type => {
+    shotTypes[type].percentage = shotTypes[type].total > 0 
+      ? Math.round((shotTypes[type].made / shotTypes[type].total) * 100) 
+      : 0;
+  });
   
   // Obtenir le nom du joueur à partir de l'ID
   const getPlayerName = (playerId) => {
@@ -189,15 +365,30 @@ const ShotChart = () => {
     return `${homeTeam} vs ${awayTeam}`;
   };
   
+  // Gérer le clic sur un marqueur de tir
+  const handleShotClick = (shot) => {
+    setHighlightedShot(shot);
+  };
+  
+  // Réinitialiser le tir surligné lorsque les filtres changent
+  useEffect(() => {
+    setHighlightedShot(null);
+  }, [playerFilter, teamFilter, gameFilter, periodFilter, shotTypeFilter, shotResultFilter]);
+  
   return (
     <ShotChartContainer>
       <ShotChartHeader>
-        <ShotChartTitle>Carte des Tirs</ShotChartTitle>
+        <ShotChartTitle>
+          <FaBasketballBall /> Carte des Tirs
+        </ShotChartTitle>
+        <FiltersToggle onClick={() => setShowFilters(!showFilters)}>
+          <FaFilter /> {showFilters ? 'Masquer les filtres' : 'Afficher les filtres'}
+        </FiltersToggle>
       </ShotChartHeader>
       
-      <FiltersContainer>
+      <FiltersContainer isVisible={showFilters}>
         <FilterGroup>
-          <FilterLabel>Joueur</FilterLabel>
+          <FilterLabel><FaBasketballBall /> Joueur</FilterLabel>
           <FilterSelect value={playerFilter} onChange={(e) => setPlayerFilter(e.target.value)}>
             <option value="">Tous les joueurs</option>
             {players.map(player => (
@@ -209,7 +400,7 @@ const ShotChart = () => {
         </FilterGroup>
         
         <FilterGroup>
-          <FilterLabel>Équipe</FilterLabel>
+          <FilterLabel><FaUsers /> Équipe</FilterLabel>
           <FilterSelect value={teamFilter} onChange={(e) => setTeamFilter(e.target.value)}>
             <option value="">Toutes les équipes</option>
             {teams.map(team => (
@@ -219,7 +410,7 @@ const ShotChart = () => {
         </FilterGroup>
         
         <FilterGroup>
-          <FilterLabel>Match</FilterLabel>
+          <FilterLabel><FaGamepad /> Match</FilterLabel>
           <FilterSelect value={gameFilter} onChange={(e) => setGameFilter(e.target.value)}>
             <option value="">Tous les matchs</option>
             {games.map(game => (
@@ -231,7 +422,7 @@ const ShotChart = () => {
         </FilterGroup>
         
         <FilterGroup>
-          <FilterLabel>Période</FilterLabel>
+          <FilterLabel><FaClock /> Période</FilterLabel>
           <FilterSelect value={periodFilter} onChange={(e) => setPeriodFilter(e.target.value)}>
             <option value="">Toutes les périodes</option>
             <option value="1">1ère période</option>
@@ -243,7 +434,7 @@ const ShotChart = () => {
         </FilterGroup>
         
         <FilterGroup>
-          <FilterLabel>Type de tir</FilterLabel>
+          <FilterLabel><FaRuler /> Type de tir</FilterLabel>
           <FilterSelect value={shotTypeFilter} onChange={(e) => setShotTypeFilter(e.target.value)}>
             <option value="">Tous les types</option>
             <option value="2pts">2 points</option>
@@ -253,7 +444,7 @@ const ShotChart = () => {
         </FilterGroup>
         
         <FilterGroup>
-          <FilterLabel>Résultat</FilterLabel>
+          <FilterLabel><FaCheck /> Résultat</FilterLabel>
           <FilterSelect value={shotResultFilter} onChange={(e) => setShotResultFilter(e.target.value)}>
             <option value="">Tous les résultats</option>
             <option value="made">Réussis</option>
@@ -263,99 +454,105 @@ const ShotChart = () => {
       </FiltersContainer>
       
       <CourtContainer>
-        <svg viewBox="0 0 500 470" width="100%" height="auto">
-          {/* Terrain de basket */}
-          <rect x="0" y="0" width="500" height="470" fill="#f8f8f8" stroke="#333" strokeWidth="2" />
-          
-          {/* Ligne médiane */}
-          <line x1="0" y1="235" x2="500" y2="235" stroke="#333" strokeWidth="2" />
-          <circle cx="250" cy="235" r="30" fill="none" stroke="#333" strokeWidth="2" />
-          
-          {/* Cercle central */}
-          <circle cx="250" cy="235" r="60" fill="none" stroke="#333" strokeWidth="2" />
-          
-          {/* Zone restrictive bas */}
-          <rect x="175" y="370" width="150" height="100" fill="none" stroke="#333" strokeWidth="2" />
-          <line x1="175" y1="420" x2="325" y2="420" stroke="#333" strokeWidth="2" />
-          
-          {/* Zone restrictive haut */}
-          <rect x="175" y="0" width="150" height="100" fill="none" stroke="#333" strokeWidth="2" />
-          <line x1="175" y1="50" x2="325" y2="50" stroke="#333" strokeWidth="2" />
-          
-          {/* Cercle bas */}
-          <circle cx="250" cy="370" r="60" fill="none" stroke="#333" strokeWidth="2" />
-          
-          {/* Cercle haut */}
-          <circle cx="250" cy="100" r="60" fill="none" stroke="#333" strokeWidth="2" />
-          
-          {/* Ligne à 3 points bas */}
-          <path d="M 100,470 A 150,150 0 0,1 400,470" fill="none" stroke="#333" strokeWidth="2" />
-          
-          {/* Ligne à 3 points haut */}
-          <path d="M 100,0 A 150,150 0 0,0 400,0" fill="none" stroke="#333" strokeWidth="2" />
-          
-          {/* Panier bas */}
-          <circle cx="250" cy="440" r="5" fill="#333" />
-          <line x1="230" y1="440" x2="270" y2="440" stroke="#333" strokeWidth="3" />
-          
-          {/* Panier haut */}
-          <circle cx="250" cy="30" r="5" fill="#333" />
-          <line x1="230" y1="30" x2="270" y2="30" stroke="#333" strokeWidth="3" />
-          
-          {/* Afficher les tirs */}
+        <BasketballCourt interactive={true}>
           {filteredShots.map((shot, index) => (
-            <g key={index}>
-              <circle 
-                cx={shot.positionX * 500} 
-                cy={shot.positionY * 470} 
-                r={8}
-                fill={shot.reussi ? '#4CAF50' : '#F44336'}
-              />
-              {playerFilter && (
-                <text 
-                  x={shot.positionX * 500} 
-                  y={(shot.positionY * 470) - 10} 
-                  fontSize="10" 
-                  textAnchor="middle" 
-                  fill="#333"
-                >
-                  {shot.typeShot}
-                </text>
-              )}
-            </g>
+            <ShotMarker 
+              key={index}
+              x={shot.positionX * 100} 
+              y={shot.positionY * 100}
+              made={shot.reussi}
+              playerId={shot.joueurId}
+              playerName={getPlayerName(shot.joueurId)}
+              shotType={shot.typeShot || '2pts'}
+              onClick={() => handleShotClick(shot)}
+              highlighted={highlightedShot === shot}
+              size={highlightedShot === shot ? '18px' : '14px'}
+              iconSize={highlightedShot === shot ? '10px' : '8px'}
+            />
           ))}
-        </svg>
-        
-        <LegendContainer>
-          <LegendItem>
-            <LegendMarker color="#4CAF50" />
-            <span>Tirs réussis</span>
-          </LegendItem>
-          <LegendItem>
-            <LegendMarker color="#F44336" />
-            <span>Tirs manqués</span>
-          </LegendItem>
-        </LegendContainer>
+        </BasketballCourt>
       </CourtContainer>
       
-      <StatsContainer>
-        <StatCard>
-          <StatValue>{totalShots}</StatValue>
-          <StatLabel>Tirs tentés</StatLabel>
-        </StatCard>
-        <StatCard>
-          <StatValue>{madeShots}</StatValue>
-          <StatLabel>Tirs réussis</StatLabel>
-        </StatCard>
-        <StatCard>
-          <StatValue>{totalShots - madeShots}</StatValue>
-          <StatLabel>Tirs manqués</StatLabel>
-        </StatCard>
-        <StatCard>
-          <StatValue>{shotPercentage}%</StatValue>
-          <StatLabel>Pourcentage</StatLabel>
-        </StatCard>
-      </StatsContainer>
+      {totalShots === 0 ? (
+        <NoDataMessage>
+          Aucun tir ne correspond aux critères de filtrage sélectionnés.
+        </NoDataMessage>
+      ) : (
+        <>
+          <StatsContainer>
+            <StatCard>
+              <StatValue>{totalShots}</StatValue>
+              <StatLabel>Tirs tentés</StatLabel>
+            </StatCard>
+            <StatCard>
+              <StatValue color="#4CAF50">{madeShots}</StatValue>
+              <StatLabel>Tirs réussis</StatLabel>
+            </StatCard>
+            <StatCard>
+              <StatValue color="#F44336">{totalShots - madeShots}</StatValue>
+              <StatLabel>Tirs manqués</StatLabel>
+            </StatCard>
+            <StatCard>
+              <StatValue color={shotPercentage >= 50 ? '#4CAF50' : shotPercentage >= 30 ? '#FF9800' : '#F44336'}>
+                {shotPercentage}%
+              </StatValue>
+              <StatLabel>Pourcentage</StatLabel>
+            </StatCard>
+          </StatsContainer>
+          
+          <ShotTypeDistribution>
+            <ShotTypeTitle>
+              <FaChartBar /> Distribution par type de tir
+            </ShotTypeTitle>
+            <ShotTypeGrid>
+              <ShotTypeCard>
+                <ShotTypeHeader>
+                  <ShotTypeName>2 Points</ShotTypeName>
+                  <ShotTypePercentage percentage={shotTypes['2pts'].percentage}>
+                    {shotTypes['2pts'].percentage}%
+                  </ShotTypePercentage>
+                </ShotTypeHeader>
+                <ProgressBar>
+                  <ProgressFill percentage={shotTypes['2pts'].percentage} />
+                </ProgressBar>
+                <ShotTypeStats>
+                  <span>{shotTypes['2pts'].made} / {shotTypes['2pts'].total} tirs réussis</span>
+                </ShotTypeStats>
+              </ShotTypeCard>
+              
+              <ShotTypeCard>
+                <ShotTypeHeader>
+                  <ShotTypeName>3 Points</ShotTypeName>
+                  <ShotTypePercentage percentage={shotTypes['3pts'].percentage}>
+                    {shotTypes['3pts'].percentage}%
+                  </ShotTypePercentage>
+                </ShotTypeHeader>
+                <ProgressBar>
+                  <ProgressFill percentage={shotTypes['3pts'].percentage} />
+                </ProgressBar>
+                <ShotTypeStats>
+                  <span>{shotTypes['3pts'].made} / {shotTypes['3pts'].total} tirs réussis</span>
+                </ShotTypeStats>
+              </ShotTypeCard>
+              
+              <ShotTypeCard>
+                <ShotTypeHeader>
+                  <ShotTypeName>Lancers Francs</ShotTypeName>
+                  <ShotTypePercentage percentage={shotTypes['lf'].percentage}>
+                    {shotTypes['lf'].percentage}%
+                  </ShotTypePercentage>
+                </ShotTypeHeader>
+                <ProgressBar>
+                  <ProgressFill percentage={shotTypes['lf'].percentage} />
+                </ProgressBar>
+                <ShotTypeStats>
+                  <span>{shotTypes['lf'].made} / {shotTypes['lf'].total} tirs réussis</span>
+                </ShotTypeStats>
+              </ShotTypeCard>
+            </ShotTypeGrid>
+          </ShotTypeDistribution>
+        </>
+      )}
     </ShotChartContainer>
   );
 };
