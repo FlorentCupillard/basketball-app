@@ -106,13 +106,33 @@ const ShotResultSelector = styled.div`
 const ShotInstructions = styled.div`
   margin-bottom: 15px;
   font-style: italic;
-  color: #666;
+  color: ${props => props.isSelecting ? '#1a73e8' : '#666'};
   background-color: ${props => props.isSelecting ? '#e8f0fe' : 'transparent'};
-  padding: ${props => props.isSelecting ? '10px' : '0'};
-  border-radius: 4px;
-  border: ${props => props.isSelecting ? '1px dashed #1a73e8' : 'none'};
+  padding: ${props => props.isSelecting ? '12px' : '0'};
+  border-radius: 8px;
+  border: ${props => props.isSelecting ? '2px dashed #1a73e8' : 'none'};
   text-align: center;
   font-weight: ${props => props.isSelecting ? 'bold' : 'normal'};
+  animation: ${props => props.isSelecting ? 'pulse 1.5s infinite' : 'none'};
+  box-shadow: ${props => props.isSelecting ? '0 2px 8px rgba(26, 115, 232, 0.2)' : 'none'};
+  transition: all 0.3s ease;
+  
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(26, 115, 232, 0.4);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(26, 115, 232, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(26, 115, 232, 0);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    padding: ${props => props.isSelecting ? '10px' : '0'};
+    font-size: 14px;
+  }
 `;
 
 const Button = styled.button`
@@ -194,16 +214,37 @@ const ShotMarker = styled.div`
 
 const TempPositionMarker = styled.div`
   position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 20px;
-  height: 20px;
+  left: ${props => props.x || '50%'};
+  top: ${props => props.y || '50%'};
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  border: 2px dashed #1a73e8;
+  border: 3px dashed #1a73e8;
   background-color: rgba(26, 115, 232, 0.2);
   transform: translate(-50%, -50%);
   pointer-events: none;
   z-index: 10;
+  animation: pulse 1.5s infinite, follow 0.1s linear;
+  
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(26, 115, 232, 0.4);
+      transform: translate(-50%, -50%) scale(1);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(26, 115, 232, 0);
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(26, 115, 232, 0);
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+  
+  @keyframes follow {
+    from { opacity: 0.7; }
+    to { opacity: 1; }
+  }
 `;
 
 const HelpText = styled.div`
@@ -292,8 +333,70 @@ const GameLive = () => {
     const x = ((e.clientX - courtRect.left) / courtRect.width) * 100;
     const y = ((e.clientY - courtRect.top) / courtRect.height) * 100;
     
+    // Déterminer automatiquement le type de tir en fonction de la position
+    const newShotType = determineShotType(x, y);
+    if (newShotType !== shotType) {
+      setShotType(newShotType);
+    }
+    
+    // Vibration tactile sur mobile pour feedback
+    if (window.navigator && window.navigator.vibrate) {
+      window.navigator.vibrate(50);
+    }
+    
+    // Animation de feedback visuel
+    const feedbackElement = document.createElement('div');
+    feedbackElement.style.position = 'absolute';
+    feedbackElement.style.left = `${e.clientX}px`;
+    feedbackElement.style.top = `${e.clientY}px`;
+    feedbackElement.style.width = '30px';
+    feedbackElement.style.height = '30px';
+    feedbackElement.style.borderRadius = '50%';
+    feedbackElement.style.backgroundColor = 'rgba(26, 115, 232, 0.3)';
+    feedbackElement.style.transform = 'translate(-50%, -50%) scale(0)';
+    feedbackElement.style.transition = 'all 0.3s ease';
+    feedbackElement.style.zIndex = '1000';
+    document.body.appendChild(feedbackElement);
+    
+    setTimeout(() => {
+      feedbackElement.style.transform = 'translate(-50%, -50%) scale(1.5)';
+      feedbackElement.style.opacity = '0';
+    }, 10);
+    
+    setTimeout(() => {
+      document.body.removeChild(feedbackElement);
+    }, 300);
+    
     setShotPosition({ x, y });
     setIsSelectingPosition(false);
+  };
+  
+  // Déterminer le type de tir en fonction de la position sur le terrain
+  const determineShotType = (x, y) => {
+    // Coordonnées du centre du terrain
+    const centerX = 50;
+    const centerY = 50;
+    
+    // Distance par rapport au panier (en haut ou en bas selon la position y)
+    const basketY = y < centerY ? 0 : 100;
+    const distanceToBasket = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - basketY, 2));
+    
+    // Vérifier si c'est un lancer franc (proche du panier et aligné)
+    const isAlignedWithBasket = Math.abs(x - centerX) < 5;
+    const isCloseToBasket = Math.abs(y - basketY) < 20 && Math.abs(y - basketY) > 10;
+    
+    if (isAlignedWithBasket && isCloseToBasket) {
+      return 'lf';
+    }
+    
+    // Vérifier si c'est un tir à 3 points (loin du panier)
+    const threePointDistance = 35; // Ajuster cette valeur selon les dimensions du terrain
+    if (distanceToBasket > threePointDistance) {
+      return '3pts';
+    }
+    
+    // Par défaut, c'est un tir à 2 points
+    return '2pts';
   };
   
   // Enregistrer le tir
