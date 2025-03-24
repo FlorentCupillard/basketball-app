@@ -310,11 +310,11 @@ const GameList = () => {
     
     switch(activeTab) {
       case 'upcoming':
-        return gameDate > now && !game.termine;
+        return gameDate > now && game.statut === 'à venir';
       case 'live':
-        return game.enCours;
+        return game.statut === 'en cours';
       case 'completed':
-        return game.termine;
+        return game.statut === 'terminé';
       default:
         return true;
     }
@@ -360,43 +360,43 @@ const GameList = () => {
               <GameDate>
                 <FaCalendarAlt /> {new Date(game.date).toLocaleDateString('fr-FR')}
               </GameDate>
-              <GameStatus status={game.enCours ? 'live' : (game.termine ? 'completed' : 'upcoming')}>
-                {game.enCours ? 'En cours' : (game.termine ? 'Terminé' : 'À venir')}
+              <GameStatus status={game.statut === 'en cours' ? 'live' : (game.statut === 'terminé' ? 'completed' : 'upcoming')}>
+                {game.statut === 'en cours' ? 'En cours' : (game.statut === 'terminé' ? 'Terminé' : 'À venir')}
               </GameStatus>
             </GameHeader>
             
             <GameContent>
               <TeamContainer>
                 <TeamLogo>
-                  <img src={getTeamLogo(game.equipeLocaleId)} alt={`Logo ${getTeamName(game.equipeLocaleId)}`} />
+                  <img src={getTeamLogo(game.equipeLocale.id)} alt={`Logo ${getTeamName(game.equipeLocale.id)}`} />
                 </TeamLogo>
-                <TeamName>{getTeamName(game.equipeLocaleId)}</TeamName>
+                <TeamName>{getTeamName(game.equipeLocale.id)}</TeamName>
               </TeamContainer>
               
               <ScoreContainer>
                 <ScoreDisplay>
-                  {game.scoreLocal}
+                  {game.equipeLocale.score}
                   <ScoreSeparator>-</ScoreSeparator>
-                  {game.scoreVisiteur}
+                  {game.equipeVisiteur.score}
                 </ScoreDisplay>
                 <GameTime>
-                  {game.enCours ? 'En direct' : (game.termine ? 'Terminé' : new Date(game.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }))}
+                  {game.statut === 'en cours' ? 'En direct' : (game.statut === 'terminé' ? 'Terminé' : new Date(game.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }))}
                 </GameTime>
               </ScoreContainer>
               
               <TeamContainer>
                 <TeamLogo>
-                  <img src={getTeamLogo(game.equipeVisiteurId)} alt={`Logo ${getTeamName(game.equipeVisiteurId)}`} />
+                  <img src={getTeamLogo(game.equipeVisiteur.id)} alt={`Logo ${getTeamName(game.equipeVisiteur.id)}`} />
                 </TeamLogo>
-                <TeamName>{getTeamName(game.equipeVisiteurId)}</TeamName>
+                <TeamName>{getTeamName(game.equipeVisiteur.id)}</TeamName>
               </TeamContainer>
             </GameContent>
             
             <GameActions>
               <ActionButton to={`/games/${game.id}`}>Détails</ActionButton>
-              {!game.termine && (
+              {game.statut !== 'terminé' && (
                 <ActionButton to={`/games/${game.id}/live`} primary>
-                  <FaPlay /> {game.enCours ? 'Suivre' : 'Commencer'}
+                  <FaPlay /> {game.statut === 'en cours' ? 'Suivre' : 'Commencer'}
                 </ActionButton>
               )}
             </GameActions>
