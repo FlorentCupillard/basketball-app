@@ -6,7 +6,7 @@ const initialState = {
     {
       id: 'team1',
       nom: 'Los Angeles Lakers',
-      logo: 'https://example.com/lakers-logo.png',
+      logo: 'https://upload.wikimedia.org/wikipedia/commons/3/3c/Los_Angeles_Lakers_logo.svg',
       joueurs: ['player1', 'player4', 'player7'],
       statistiquesEquipe: {
         matchsJoues: 65,
@@ -19,7 +19,7 @@ const initialState = {
     {
       id: 'team2',
       nom: 'Golden State Warriors',
-      logo: 'https://example.com/warriors-logo.png',
+      logo: 'https://cdn.nba.com/teams/uploads/sites/1610612744/2022/06/gsw-logo-1920.svg',
       joueurs: ['player2', 'player5', 'player8'],
       statistiquesEquipe: {
         matchsJoues: 64,
@@ -32,7 +32,7 @@ const initialState = {
     {
       id: 'team3',
       nom: 'Boston Celtics',
-      logo: 'https://example.com/celtics-logo.png',
+      logo: 'https://fr.wikipedia.org/wiki/Fichier:Celtics_de_Boston_logo.svg',
       joueurs: ['player3', 'player6', 'player9'],
       statistiquesEquipe: {
         matchsJoues: 65,
@@ -55,7 +55,7 @@ const teamsSlice = createSlice({
     addTeam: (state, action) => {
       state.teams.push(action.payload);
     },
-    
+
     // Mettre à jour une équipe
     updateTeam: (state, action) => {
       const { id } = action.payload;
@@ -64,13 +64,13 @@ const teamsSlice = createSlice({
         state.teams[index] = action.payload;
       }
     },
-    
+
     // Supprimer une équipe
     deleteTeam: (state, action) => {
       const id = action.payload;
       state.teams = state.teams.filter(team => team.id !== id);
     },
-    
+
     // Ajouter un joueur à une équipe
     addPlayerToTeam: (state, action) => {
       const { teamId, playerId } = action.payload;
@@ -79,7 +79,7 @@ const teamsSlice = createSlice({
         team.joueurs.push(playerId);
       }
     },
-    
+
     // Retirer un joueur d'une équipe
     removePlayerFromTeam: (state, action) => {
       const { teamId, playerId } = action.payload;
@@ -88,7 +88,7 @@ const teamsSlice = createSlice({
         team.joueurs = team.joueurs.filter(id => id !== playerId);
       }
     },
-    
+
     // Mettre à jour les statistiques d'une équipe
     updateTeamStats: (state, action) => {
       const { teamId, stats } = action.payload;
@@ -103,13 +103,13 @@ const teamsSlice = createSlice({
   }
 });
 
-export const { 
-  addTeam, 
-  updateTeam, 
-  deleteTeam, 
-  addPlayerToTeam, 
-  removePlayerFromTeam, 
-  updateTeamStats 
+export const {
+  addTeam,
+  updateTeam,
+  deleteTeam,
+  addPlayerToTeam,
+  removePlayerFromTeam,
+  updateTeamStats
 } = teamsSlice.actions;
 
 export default teamsSlice.reducer;
