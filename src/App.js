@@ -5,6 +5,7 @@ import { FaBars, FaTimes, FaHome, FaUsers, FaBasketballBall, FaChartBar, FaChart
 import TeamList from './components/teams/TeamList';
 import TeamCreateForm from './components/teams/TeamCreateForm';
 import TeamEditForm from './components/teams/TeamEditForm';
+import TeamDetail from './components/teams/TeamDetail';
 import PlayerList from './components/players/PlayerList';
 import PlayerCreateForm from './components/players/PlayerCreateForm';
 import PlayerEditForm from './components/players/PlayerEditForm';
@@ -535,6 +536,7 @@ function App() {
           } />
           <Route path="/teams" element={<TeamList />} />
           <Route path="/teams/create" element={<TeamCreateForm />} />
+          <Route path="/teams/:teamId" element={<TeamDetail />} />
           <Route path="/teams/:teamId/edit" element={<TeamEditForm />} />
           <Route path="/players" element={<PlayerList />} />
           <Route path="/players/create" element={<PlayerCreateForm />} />
