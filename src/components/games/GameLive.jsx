@@ -235,7 +235,7 @@ const GameLive = () => {
   
   // Gérer le changement de résultat du tir
   const handleShotResultChange = (e) => {
-    setShotResult(e.target.value === 'made');
+    setShotResult(e.target.value);
   };
   
   // Gérer le clic sur le bouton de sélection de position

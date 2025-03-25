@@ -19,7 +19,7 @@ const ShotMarker = styled.div`
   width: ${props => props.isTemp ? '16px' : '12px'};
   height: ${props => props.isTemp ? '16px' : '12px'};
   border-radius: 50%;
-  background-color: ${props => props.made ? 'green' : 'red'};
+  background-color: ${props => props.made === 'true' ? 'green' : 'red'};
   transform: translate(-50%, -50%);
   border: ${props => props.isTemp ? '2px solid white' : '1px solid white'};
   box-shadow: 0 0 ${props => props.isTemp ? '4px' : '2px'} rgba(0, 0, 0, 0.5);
