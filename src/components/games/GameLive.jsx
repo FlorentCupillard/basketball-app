@@ -2,10 +2,15 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import BasketballCourt from '../court/BasketballCourt';
 import { addShot } from '../../store/slices/eventsSlice';
 import { updatePlayerGameStats } from '../../store/slices/gamesSlice';
-import { FaBasketballBall, FaPlus, FaHandPaper } from 'react-icons/fa';
+import { FaBasketballBall, FaHandPaper, FaPlus } from 'react-icons/fa';
+
+// Composants importés
+import TeamRoster from './TeamRoster';
+import ShotChartComponent from './ShotChartComponent';
+import RecentActions from './RecentActions';
+import GameControls from './GameControls';
 
 const GameLiveContainer = styled.div`
   display: flex;
@@ -72,84 +77,12 @@ const RosterSection = styled.div`
   }
 `;
 
-const TeamRoster = styled.div`
+const TeamRosterContainer = styled.div`
   flex: 1;
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 15px;
-`;
-
-const TeamRosterTitle = styled.h3`
-  font-size: 16px;
-  margin: 0 0 10px 0;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #eee;
-  color: ${props => props.color || '#333'};
-`;
-
-const PlayersList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-height: 300px;
-  overflow-y: auto;
-`;
-
-const PlayerItem = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 8px;
-  border-radius: 4px;
-  background-color: ${props => props.selected ? '#e8f0fe' : '#f8f8f8'};
-  border: ${props => props.selected ? '2px solid #1a73e8' : '1px solid #eee'};
-  cursor: pointer;
-  transition: all 0.2s ease;
-  
-  &:hover {
-    background-color: ${props => props.selected ? '#e8f0fe' : '#f0f0f0'};
-    transform: translateY(-2px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-`;
-
-const PlayerInfo = styled.div`
-  flex: 1;
-`;
-
-const PlayerName = styled.div`
-  font-weight: 600;
-  font-size: 14px;
-`;
-
-const PlayerNumber = styled.div`
-  font-size: 12px;
-  color: #666;
-`;
-
-const PlayerActions = styled.div`
-  display: flex;
-  gap: 5px;
-`;
-
-const ActionButton = styled.button`
-  background-color: ${props => props.color || '#f0f0f0'};
-  color: ${props => props.textColor || '#333'};
-  border: none;
-  border-radius: 4px;
-  padding: 5px 8px;
-  font-size: 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  transition: all 0.2s ease;
-  
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    background-color: ${props => props.hoverColor || '#e0e0e0'};
-  }
 `;
 
 const ShotChartSection = styled.div`
@@ -161,98 +94,6 @@ const ShotChartSection = styled.div`
   }
 `;
 
-const CourtContainer = styled.div`
-  flex: 2;
-  position: relative;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
-
-const RecentActionsContainer = styled.div`
-  flex: 1;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 15px;
-`;
-
-const RecentActionsTitle = styled.h3`
-  font-size: 16px;
-  margin: 0 0 10px 0;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #eee;
-`;
-
-const ActionsList = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  max-height: 300px;
-  overflow-y: auto;
-`;
-
-const ActionItem = styled.li`
-  padding: 8px 0;
-  border-bottom: 1px solid #eee;
-  font-size: 14px;
-  
-  &:last-child {
-    border-bottom: none;
-  }
-`;
-
-const ShotMarker = styled.div`
-  position: absolute;
-  left: ${props => props.x}%;
-  top: ${props => props.y}%;
-  width: ${props => props.isTemp ? '16px' : '12px'};
-  height: ${props => props.isTemp ? '16px' : '12px'};
-  border-radius: 50%;
-  background-color: ${props => props.made ? 'green' : 'red'};
-  transform: translate(-50%, -50%);
-  border: ${props => props.isTemp ? '2px solid white' : '1px solid white'};
-  box-shadow: 0 0 ${props => props.isTemp ? '4px' : '2px'} rgba(0, 0, 0, 0.5);
-  z-index: ${props => props.isTemp ? '10' : '5'};
-  transition: all 0.2s ease;
-`;
-
-const TempPositionMarker = styled.div`
-  position: absolute;
-  left: ${props => props.x || '50%'};
-  top: ${props => props.y || '50%'};
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: 3px dashed #1a73e8;
-  background-color: rgba(26, 115, 232, 0.2);
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  z-index: 10;
-  animation: pulse 1.5s infinite, follow 0.1s linear;
-  
-  @keyframes pulse {
-    0% {
-      box-shadow: 0 0 0 0 rgba(26, 115, 232, 0.4);
-      transform: translate(-50%, -50%) scale(1);
-    }
-    70% {
-      box-shadow: 0 0 0 10px rgba(26, 115, 232, 0);
-      transform: translate(-50%, -50%) scale(1.1);
-    }
-    100% {
-      box-shadow: 0 0 0 0 rgba(26, 115, 232, 0);
-      transform: translate(-50%, -50%) scale(1);
-    }
-  }
-  
-  @keyframes follow {
-    from { opacity: 0.7; }
-    to { opacity: 1; }
-  }
-`;
-
 const HelpText = styled.div`
   background-color: #e8f0fe;
   padding: 10px;
@@ -261,66 +102,6 @@ const HelpText = styled.div`
   font-size: 14px;
   color: #1a73e8;
   border-left: 4px solid #1a73e8;
-`;
-
-const ShotInstructions = styled.div`
-  margin-bottom: 15px;
-  font-style: italic;
-  color: ${props => props.isSelecting ? '#1a73e8' : '#666'};
-  background-color: ${props => props.isSelecting ? '#e8f0fe' : 'transparent'};
-  padding: ${props => props.isSelecting ? '12px' : '0'};
-  border-radius: 8px;
-  border: ${props => props.isSelecting ? '2px dashed #1a73e8' : 'none'};
-  text-align: center;
-  font-weight: ${props => props.isSelecting ? 'bold' : 'normal'};
-  animation: ${props => props.isSelecting ? 'pulse 1.5s infinite' : 'none'};
-  box-shadow: ${props => props.isSelecting ? '0 2px 8px rgba(26, 115, 232, 0.2)' : 'none'};
-  transition: all 0.3s ease;
-  
-  @keyframes pulse {
-    0% {
-      box-shadow: 0 0 0 0 rgba(26, 115, 232, 0.4);
-    }
-    70% {
-      box-shadow: 0 0 0 10px rgba(26, 115, 232, 0);
-    }
-    100% {
-      box-shadow: 0 0 0 0 rgba(26, 115, 232, 0);
-    }
-  }
-`;
-
-const RadioGroup = styled.div`
-  display: flex;
-  gap: 15px;
-  margin-bottom: 15px;
-`;
-
-const RadioLabel = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  cursor: pointer;
-`;
-
-const Button = styled.button`
-  background-color: ${props => props.primary ? '#1a73e8' : '#f0f0f0'};
-  color: ${props => props.primary ? 'white' : '#333'};
-  border: none;
-  border-radius: 4px;
-  padding: 8px 16px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  
-  &:hover {
-    background-color: ${props => props.primary ? '#1557b0' : '#e0e0e0'};
-  }
-  
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
 `;
 
 const GameLive = () => {
@@ -336,8 +117,8 @@ const GameLive = () => {
   // États locaux pour le suivi du match
   const [currentPeriod, setCurrentPeriod] = useState(1);
   const [timeRemaining, setTimeRemaining] = useState(600); // 10:00 en secondes
-  const [homeScore, setHomeScore] = useState(game ? game.scoreLocal : 0);
-  const [awayScore, setAwayScore] = useState(game ? game.scoreVisiteur : 0);
+  const [homeScore, setHomeScore] = useState(game ? game.equipeLocale.score : 0);
+  const [awayScore, setAwayScore] = useState(game ? game.equipeVisiteur.score : 0);
   
   // États locaux pour l'enregistrement des actions
   const [selectedPlayerId, setSelectedPlayerId] = useState('');
@@ -347,8 +128,8 @@ const GameLive = () => {
   const [isSelectingPosition, setIsSelectingPosition] = useState(false);
   
   // Filtrer les joueurs par équipe
-  const homePlayers = players.filter(player => player.equipeId === game?.equipeLocaleId);
-  const awayPlayers = players.filter(player => player.equipeId === game?.equipeVisiteurId);
+  const homePlayers = players.filter(player => player.equipeId === game?.equipeLocale?.id);
+  const awayPlayers = players.filter(player => player.equipeId === game?.equipeVisiteur?.id);
   
   // Filtrer les événements de tir
   const shotEvents = events.filter(event => event.type === 'tir');
@@ -416,7 +197,7 @@ const GameLive = () => {
   
   // Gérer le changement de résultat du tir
   const handleShotResultChange = (e) => {
-    setShotResult(e.target.value);
+    setShotResult(e.target.value === 'made');
   };
   
   // Gérer le clic sur le bouton de sélection de position
@@ -484,7 +265,7 @@ const GameLive = () => {
     
     // Mettre à jour le score
     if (isMade) {
-      if (teamId === game.equipeLocaleId) {
+      if (teamId === game.equipeLocale.id) {
         setHomeScore(prevScore => prevScore + points);
       } else {
         setAwayScore(prevScore => prevScore + points);
@@ -535,7 +316,7 @@ const GameLive = () => {
   // Mettre à jour le titre de la page
   useEffect(() => {
     if (game) {
-      document.title = `Match en direct: ${getTeamName(game.equipeLocaleId)} vs ${getTeamName(game.equipeVisiteurId)}`;
+      document.title = `Match en direct: ${getTeamName(game.equipeLocale.id)} vs ${getTeamName(game.equipeVisiteur.id)}`;
     }
     
     return () => {
@@ -551,7 +332,7 @@ const GameLive = () => {
     <GameLiveContainer>
       <GameHeader>
         <TeamScore>
-          <TeamName>{getTeamName(game.equipeLocaleId)}</TeamName>
+          <TeamName>{getTeamName(game.equipeLocale.id)}</TeamName>
           <Score>{homeScore}</Score>
         </TeamScore>
         
@@ -561,10 +342,17 @@ const GameLive = () => {
         </GameInfo>
         
         <TeamScore>
-          <TeamName>{getTeamName(game.equipeVisiteurId)}</TeamName>
+          <TeamName>{getTeamName(game.equipeVisiteur.id)}</TeamName>
           <Score>{awayScore}</Score>
         </TeamScore>
       </GameHeader>
+      
+      <GameControls 
+        currentPeriod={currentPeriod}
+        timeRemaining={timeRemaining}
+        onPeriodChange={setCurrentPeriod}
+        onTimeChange={setTimeRemaining}
+      />
       
       <HelpText>
         <strong>Comment utiliser cette interface :</strong> 
@@ -577,179 +365,48 @@ const GameLive = () => {
       
       <GameContent>
         <RosterSection>
-          <TeamRoster>
-            <TeamRosterTitle color="#1a73e8">{getTeamName(game.equipeLocaleId)}</TeamRosterTitle>
-            <PlayersList>
-              {homePlayers.map(player => (
-                <PlayerItem 
-                  key={player.id} 
-                  selected={selectedPlayerId === player.id}
-                  onClick={() => handlePlayerSelect(player.id)}
-                >
-                  <PlayerInfo>
-                    <PlayerName>{player.prenom} {player.nom}</PlayerName>
-                    <PlayerNumber>#{player.numero}</PlayerNumber>
-                  </PlayerInfo>
-                  <PlayerActions>
-                    <ActionButton 
-                      color="#e8f5e9" 
-                      hoverColor="#c8e6c9" 
-                      textColor="#2e7d32"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddRebound(player.id);
-                      }}
-                    >
-                      <FaHandPaper size={12} /> Rebond
-                    </ActionButton>
-                    <ActionButton 
-                      color="#e3f2fd" 
-                      hoverColor="#bbdefb" 
-                      textColor="#1565c0"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddAssist(player.id);
-                      }}
-                    >
-                      <FaPlus size={12} /> Passe
-                    </ActionButton>
-                  </PlayerActions>
-                </PlayerItem>
-              ))}
-            </PlayersList>
-          </TeamRoster>
+          <TeamRosterContainer>
+            <TeamRoster 
+              title={getTeamName(game.equipeLocale.id)}
+              titleColor="#1a73e8"
+              players={homePlayers}
+              selectedPlayerId={selectedPlayerId}
+              onPlayerSelect={handlePlayerSelect}
+              onAddRebound={handleAddRebound}
+              onAddAssist={handleAddAssist}
+            />
+          </TeamRosterContainer>
           
-          <TeamRoster>
-            <TeamRosterTitle color="#f44336">{getTeamName(game.equipeVisiteurId)}</TeamRosterTitle>
-            <PlayersList>
-              {awayPlayers.map(player => (
-                <PlayerItem 
-                  key={player.id} 
-                  selected={selectedPlayerId === player.id}
-                  onClick={() => handlePlayerSelect(player.id)}
-                >
-                  <PlayerInfo>
-                    <PlayerName>{player.prenom} {player.nom}</PlayerName>
-                    <PlayerNumber>#{player.numero}</PlayerNumber>
-                  </PlayerInfo>
-                  <PlayerActions>
-                    <ActionButton 
-                      color="#e8f5e9" 
-                      hoverColor="#c8e6c9" 
-                      textColor="#2e7d32"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddRebound(player.id);
-                      }}
-                    >
-                      <FaHandPaper size={12} /> Rebond
-                    </ActionButton>
-                    <ActionButton 
-                      color="#e3f2fd" 
-                      hoverColor="#bbdefb" 
-                      textColor="#1565c0"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddAssist(player.id);
-                      }}
-                    >
-                      <FaPlus size={12} /> Passe
-                    </ActionButton>
-                  </PlayerActions>
-                </PlayerItem>
-              ))}
-            </PlayersList>
-          </TeamRoster>
+          <TeamRosterContainer>
+            <TeamRoster 
+              title={getTeamName(game.equipeVisiteur.id)}
+              titleColor="#f44336"
+              players={awayPlayers}
+              selectedPlayerId={selectedPlayerId}
+              onPlayerSelect={handlePlayerSelect}
+              onAddRebound={handleAddRebound}
+              onAddAssist={handleAddAssist}
+            />
+          </TeamRosterContainer>
         </RosterSection>
         
         <ShotChartSection>
-          <div style={{ flex: 2, display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <RadioGroup>
-                <RadioLabel>
-                  <input 
-                    type="radio" 
-                    name="shotResult" 
-                    value="made" 
-                    checked={shotResult === 'made'} 
-                    onChange={handleShotResultChange}
-                  />
-                  Réussi
-                </RadioLabel>
-                <RadioLabel>
-                  <input 
-                    type="radio" 
-                    name="shotResult" 
-                    value="missed" 
-                    checked={shotResult === 'missed'} 
-                    onChange={handleShotResultChange}
-                  />
-                  Manqué
-                </RadioLabel>
-              </RadioGroup>
-              
-              <Button 
-                primary 
-                disabled={!selectedPlayerId || isSelectingPosition}
-                onClick={handleSelectPositionClick}
-              >
-                <FaBasketballBall style={{ marginRight: '5px' }} />
-                Sélectionner position
-              </Button>
-            </div>
-            
-            <ShotInstructions isSelecting={isSelectingPosition}>
-              {isSelectingPosition 
-                ? `Cliquez sur le terrain pour indiquer la position du tir de ${players.find(p => p.id === selectedPlayerId)?.prenom} ${players.find(p => p.id === selectedPlayerId)?.nom}`
-                : 'Sélectionnez un joueur et cliquez sur "Sélectionner position" pour enregistrer un tir'}
-            </ShotInstructions>
-            
-            <CourtContainer onClick={handleCourtClick}>
-              <BasketballCourt>
-                {/* Afficher les tirs déjà enregistrés */}
-                {shotEvents.map((shot, index) => (
-                  <ShotMarker
-                    key={index}
-                    x={shot.positionX}
-                    y={shot.positionY}
-                    made={shot.reussi}
-                  />
-                ))}
-                
-                {/* Afficher le marqueur temporaire lors de la sélection de position */}
-                {isSelectingPosition && shotPosition && (
-                  <ShotMarker
-                    x={shotPosition.x}
-                    y={shotPosition.y}
-                    made={shotResult === 'made'}
-                    isTemp={true}
-                  />
-                )}
-                
-                {/* Afficher le curseur de position */}
-                {isSelectingPosition && (
-                  <TempPositionMarker />
-                )}
-              </BasketballCourt>
-            </CourtContainer>
-          </div>
+          <ShotChartComponent 
+            shotEvents={shotEvents}
+            isSelectingPosition={isSelectingPosition}
+            shotPosition={shotPosition}
+            shotResult={shotResult ? 'made' : 'missed'}
+            selectedPlayerId={selectedPlayerId}
+            players={players}
+            onCourtClick={handleCourtClick}
+            onShotResultChange={handleShotResultChange}
+            onSelectPositionClick={handleSelectPositionClick}
+          />
           
-          <RecentActionsContainer>
-            <RecentActionsTitle>Dernières actions</RecentActionsTitle>
-            <ActionsList>
-              {events.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 10).map((event, index) => (
-                <ActionItem key={index}>
-                  {formatEvent(event)}
-                </ActionItem>
-              ))}
-              
-              {events.length === 0 && (
-                <div style={{ padding: '20px 0', textAlign: 'center', color: '#666' }}>
-                  Aucune action enregistrée
-                </div>
-              )}
-            </ActionsList>
-          </RecentActionsContainer>
+          <RecentActions 
+            events={events}
+            formatEvent={formatEvent}
+          />
         </ShotChartSection>
       </GameContent>
     </GameLiveContainer>
