@@ -462,6 +462,7 @@ const GameLive = () => {
               onPlayerSelect={handlePlayerSelect}
               onAddRebound={handleAddRebound}
               onAddAssist={handleAddAssist}
+              gameStats={game.statistiquesJoueurs}
             />
           </TeamRosterContainer>
           
@@ -474,6 +475,7 @@ const GameLive = () => {
               onPlayerSelect={handlePlayerSelect}
               onAddRebound={handleAddRebound}
               onAddAssist={handleAddAssist}
+              gameStats={game.statistiquesJoueurs}
             />
           </TeamRosterContainer>
         </RosterSection>
@@ -483,7 +485,7 @@ const GameLive = () => {
             shotEvents={shotEvents}
             isSelectingPosition={isSelectingPosition}
             shotPosition={shotPosition}
-            shotResult={shotResult ? 'made' : 'missed'}
+            shotResult={shotResult}
             selectedPlayerId={selectedPlayerId}
             players={players}
             onCourtClick={handleCourtClick}

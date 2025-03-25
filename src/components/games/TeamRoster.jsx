@@ -66,6 +66,12 @@ const ActionButton = styled.button`
   }
 `;
 
+const PlayerStats = styled.div`
+  font-size: 12px;
+  color: #666;
+  margin-top: 2px;
+`;
+
 const TeamRoster = ({ 
   title, 
   titleColor, 
@@ -73,8 +79,14 @@ const TeamRoster = ({
   selectedPlayerId, 
   onPlayerSelect, 
   onAddRebound, 
-  onAddAssist 
+  onAddAssist,
+  gameStats
 }) => {
+  // Fonction pour obtenir les statistiques d'un joueur
+  const getPlayerStats = (playerId) => {
+    if (!gameStats) return null;
+    return gameStats.find(stats => stats.joueurId === playerId);
+  };
   return (
     <div>
       <h3 style={{ 
@@ -97,6 +109,11 @@ const TeamRoster = ({
               <PlayerInfo>
                 <PlayerName>{player.prenom} {player.nom}</PlayerName>
                 <PlayerNumber>#{player.numero}</PlayerNumber>
+                {getPlayerStats(player.id) && (
+                  <PlayerStats>
+                    {getPlayerStats(player.id).points || 0}pts {getPlayerStats(player.id).rebonds || 0}reb {getPlayerStats(player.id).passesDecisives || 0}pd
+                  </PlayerStats>
+                )}
               </PlayerInfo>
               <PlayerActions>
                 <ActionButton 
