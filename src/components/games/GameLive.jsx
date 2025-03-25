@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { addShot } from '../../store/slices/eventsSlice';
-import { updatePlayerGameStats } from '../../store/slices/gamesSlice';
+import { updatePlayerGameStats, updateGameScore } from '../../store/slices/gamesSlice';
 import { FaBasketballBall, FaHandPaper, FaPlus } from 'react-icons/fa';
 
 // Composants importés
