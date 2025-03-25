@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom';
 import BasketballCourt from '../court/BasketballCourt';
 import { addShot } from '../../store/slices/eventsSlice';
 import { updatePlayerGameStats } from '../../store/slices/gamesSlice';
+import { FaBasketballBall, FaPlus, FaHandPaper } from 'react-icons/fa';
 
 const GameLiveContainer = styled.div`
   display: flex;
@@ -57,15 +58,107 @@ const GamePeriod = styled.div`
 
 const GameContent = styled.div`
   display: flex;
+  flex-direction: column;
   gap: 20px;
   margin-bottom: 20px;
 `;
 
-const GameActions = styled.div`
+const RosterSection = styled.div`
+  display: flex;
+  gap: 20px;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+`;
+
+const TeamRoster = styled.div`
   flex: 1;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+`;
+
+const TeamRosterTitle = styled.h3`
+  font-size: 16px;
+  margin: 0 0 10px 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+  color: ${props => props.color || '#333'};
+`;
+
+const PlayersList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+`;
+
+const PlayerItem = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border-radius: 4px;
+  background-color: ${props => props.selected ? '#e8f0fe' : '#f8f8f8'};
+  border: ${props => props.selected ? '2px solid #1a73e8' : '1px solid #eee'};
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: ${props => props.selected ? '#e8f0fe' : '#f0f0f0'};
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+`;
+
+const PlayerInfo = styled.div`
+  flex: 1;
+`;
+
+const PlayerName = styled.div`
+  font-weight: 600;
+  font-size: 14px;
+`;
+
+const PlayerNumber = styled.div`
+  font-size: 12px;
+  color: #666;
+`;
+
+const PlayerActions = styled.div`
+  display: flex;
+  gap: 5px;
+`;
+
+const ActionButton = styled.button`
+  background-color: ${props => props.color || '#f0f0f0'};
+  color: ${props => props.textColor || '#333'};
+  border: none;
+  border-radius: 4px;
+  padding: 5px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: ${props => props.hoverColor || '#e0e0e0'};
+  }
+`;
+
+const ShotChartSection = styled.div`
+  display: flex;
+  gap: 20px;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
 `;
 
 const CourtContainer = styled.div`
@@ -77,113 +170,26 @@ const CourtContainer = styled.div`
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
-const ActionCard = styled.div`
+const RecentActionsContainer = styled.div`
+  flex: 1;
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 15px;
 `;
 
-const ActionTitle = styled.h3`
+const RecentActionsTitle = styled.h3`
   font-size: 16px;
   margin: 0 0 10px 0;
   padding-bottom: 10px;
   border-bottom: 1px solid #eee;
 `;
 
-const PlayerSelector = styled.div`
-  margin-bottom: 15px;
-`;
-
-const ShotTypeSelector = styled.div`
-  margin-bottom: 15px;
-`;
-
-const ShotResultSelector = styled.div`
-  margin-bottom: 15px;
-`;
-
-const ShotInstructions = styled.div`
-  margin-bottom: 15px;
-  font-style: italic;
-  color: ${props => props.isSelecting ? '#1a73e8' : '#666'};
-  background-color: ${props => props.isSelecting ? '#e8f0fe' : 'transparent'};
-  padding: ${props => props.isSelecting ? '12px' : '0'};
-  border-radius: 8px;
-  border: ${props => props.isSelecting ? '2px dashed #1a73e8' : 'none'};
-  text-align: center;
-  font-weight: ${props => props.isSelecting ? 'bold' : 'normal'};
-  animation: ${props => props.isSelecting ? 'pulse 1.5s infinite' : 'none'};
-  box-shadow: ${props => props.isSelecting ? '0 2px 8px rgba(26, 115, 232, 0.2)' : 'none'};
-  transition: all 0.3s ease;
-  
-  @keyframes pulse {
-    0% {
-      box-shadow: 0 0 0 0 rgba(26, 115, 232, 0.4);
-    }
-    70% {
-      box-shadow: 0 0 0 10px rgba(26, 115, 232, 0);
-    }
-    100% {
-      box-shadow: 0 0 0 0 rgba(26, 115, 232, 0);
-    }
-  }
-  
-  @media (max-width: 768px) {
-    padding: ${props => props.isSelecting ? '10px' : '0'};
-    font-size: 14px;
-  }
-`;
-
-const Button = styled.button`
-  background-color: ${props => props.primary ? '#1a73e8' : '#f0f0f0'};
-  color: ${props => props.primary ? 'white' : '#333'};
-  border: none;
-  border-radius: 4px;
-  padding: 8px 16px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  
-  &:hover {
-    background-color: ${props => props.primary ? '#1557b0' : '#e0e0e0'};
-  }
-  
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
-
-const Select = styled.select`
-  width: 100%;
-  padding: 8px 12px;
-  border-radius: 4px;
-  border: 1px solid #ddd;
-  background-color: white;
-`;
-
-const RadioGroup = styled.div`
-  display: flex;
-  gap: 15px;
-`;
-
-const RadioLabel = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  cursor: pointer;
-`;
-
-const RecentActions = styled.div`
-  margin-top: 20px;
-`;
-
 const ActionsList = styled.ul`
   list-style: none;
   padding: 0;
   margin: 0;
-  max-height: 200px;
+  max-height: 300px;
   overflow-y: auto;
 `;
 
@@ -257,6 +263,66 @@ const HelpText = styled.div`
   border-left: 4px solid #1a73e8;
 `;
 
+const ShotInstructions = styled.div`
+  margin-bottom: 15px;
+  font-style: italic;
+  color: ${props => props.isSelecting ? '#1a73e8' : '#666'};
+  background-color: ${props => props.isSelecting ? '#e8f0fe' : 'transparent'};
+  padding: ${props => props.isSelecting ? '12px' : '0'};
+  border-radius: 8px;
+  border: ${props => props.isSelecting ? '2px dashed #1a73e8' : 'none'};
+  text-align: center;
+  font-weight: ${props => props.isSelecting ? 'bold' : 'normal'};
+  animation: ${props => props.isSelecting ? 'pulse 1.5s infinite' : 'none'};
+  box-shadow: ${props => props.isSelecting ? '0 2px 8px rgba(26, 115, 232, 0.2)' : 'none'};
+  transition: all 0.3s ease;
+  
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(26, 115, 232, 0.4);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(26, 115, 232, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(26, 115, 232, 0);
+    }
+  }
+`;
+
+const RadioGroup = styled.div`
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+`;
+
+const RadioLabel = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+`;
+
+const Button = styled.button`
+  background-color: ${props => props.primary ? '#1a73e8' : '#f0f0f0'};
+  color: ${props => props.primary ? 'white' : '#333'};
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  
+  &:hover {
+    background-color: ${props => props.primary ? '#1557b0' : '#e0e0e0'};
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
 const GameLive = () => {
   const { gameId } = useParams();
   const dispatch = useDispatch();
@@ -270,24 +336,27 @@ const GameLive = () => {
   // États locaux pour le suivi du match
   const [currentPeriod, setCurrentPeriod] = useState(1);
   const [timeRemaining, setTimeRemaining] = useState(600); // 10:00 en secondes
-  const [homeScore, setHomeScore] = useState(game ? game.equipeLocale.score : 0);
-  const [awayScore, setAwayScore] = useState(game ? game.equipeVisiteur.score : 0);
+  const [homeScore, setHomeScore] = useState(game ? game.scoreLocal : 0);
+  const [awayScore, setAwayScore] = useState(game ? game.scoreVisiteur : 0);
   
-  // États locaux pour l'enregistrement des tirs
-  const [selectedTeamId, setSelectedTeamId] = useState(game ? game.equipeLocale.id : '');
+  // États locaux pour l'enregistrement des actions
   const [selectedPlayerId, setSelectedPlayerId] = useState('');
   const [shotType, setShotType] = useState('2pts');
   const [shotResult, setShotResult] = useState('made');
   const [shotPosition, setShotPosition] = useState(null);
   const [isSelectingPosition, setIsSelectingPosition] = useState(false);
   
-  // Filtrer les joueurs par équipe sélectionnée
-  const teamPlayers = players.filter(player => player.equipeId === selectedTeamId);
+  // Filtrer les joueurs par équipe
+  const homePlayers = players.filter(player => player.equipeId === game?.equipeLocaleId);
+  const awayPlayers = players.filter(player => player.equipeId === game?.equipeVisiteurId);
+  
+  // Filtrer les événements de tir
+  const shotEvents = events.filter(event => event.type === 'tir');
   
   // Obtenir les noms des équipes
   const getTeamName = (teamId) => {
     const team = teams.find(team => team.id === teamId);
-    return team ? team.nom : 'Équipe inconnue';
+    return team ? team.nom : 'Équipe non assignée';
   };
   
   // Formater le temps restant (mm:ss)
@@ -297,15 +366,47 @@ const GameLive = () => {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
   
-  // Gérer le changement d'équipe
-  const handleTeamChange = (e) => {
-    setSelectedTeamId(e.target.value);
-    setSelectedPlayerId('');
+  // Gérer la sélection d'un joueur
+  const handlePlayerSelect = (playerId) => {
+    setSelectedPlayerId(playerId);
   };
   
-  // Gérer le changement de joueur
-  const handlePlayerChange = (e) => {
-    setSelectedPlayerId(e.target.value);
+  // Gérer l'ajout d'un rebond
+  const handleAddRebound = (playerId) => {
+    const player = players.find(p => p.id === playerId);
+    const teamId = player.equipeId;
+    
+    const newRebound = {
+      id: `rebound_${Date.now()}`,
+      matchId: gameId,
+      joueurId: playerId,
+      equipeId: teamId,
+      type: 'rebond',
+      timestamp: new Date().toISOString(),
+      periode: currentPeriod,
+      tempsRestant: timeRemaining
+    };
+    
+    dispatch({ type: 'events/addEvent', payload: newRebound });
+  };
+  
+  // Gérer l'ajout d'une passe décisive
+  const handleAddAssist = (playerId) => {
+    const player = players.find(p => p.id === playerId);
+    const teamId = player.equipeId;
+    
+    const newAssist = {
+      id: `assist_${Date.now()}`,
+      matchId: gameId,
+      joueurId: playerId,
+      equipeId: teamId,
+      type: 'passe',
+      timestamp: new Date().toISOString(),
+      periode: currentPeriod,
+      tempsRestant: timeRemaining
+    };
+    
+    dispatch({ type: 'events/addEvent', payload: newAssist });
   };
   
   // Gérer le changement de type de tir
@@ -318,13 +419,40 @@ const GameLive = () => {
     setShotResult(e.target.value);
   };
   
-  // Commencer la sélection de la position du tir
-  const handleStartPositionSelection = () => {
+  // Gérer le clic sur le bouton de sélection de position
+  const handleSelectPositionClick = () => {
+    if (!selectedPlayerId) {
+      alert('Veuillez sélectionner un joueur avant d\'enregistrer un tir.');
+      return;
+    }
+    
     setIsSelectingPosition(true);
-    setShotPosition(null);
   };
   
-  // Gérer le clic sur le terrain pour positionner le tir
+  // Déterminer le type de tir en fonction de la position
+  const determineShotType = (x, y) => {
+    // Coordonnées approximatives pour la ligne à 3 points
+    const centerX = 50;
+    const topY = 10;
+    const bottomY = 90;
+    
+    // Distance du centre du terrain (pour les tirs du milieu de terrain)
+    const distanceFromCenter = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - 50, 2));
+    
+    // Vérifier si le tir est à l'intérieur de la zone à 2 points
+    if ((y < topY || y > bottomY) && distanceFromCenter < 40) {
+      return '2pts';
+    }
+    
+    // Vérifier si le tir est à l'extérieur de la ligne à 3 points
+    if (distanceFromCenter > 35) {
+      return '3pts';
+    }
+    
+    return '2pts';
+  };
+  
+  // Gérer le clic sur le terrain
   const handleCourtClick = (e) => {
     if (!isSelectingPosition) return;
     
@@ -339,157 +467,77 @@ const GameLive = () => {
       setShotType(newShotType);
     }
     
-    // Vibration tactile sur mobile pour feedback
-    if (window.navigator && window.navigator.vibrate) {
-      window.navigator.vibrate(50);
-    }
-    
-    // Animation de feedback visuel
-    const feedbackElement = document.createElement('div');
-    feedbackElement.style.position = 'absolute';
-    feedbackElement.style.left = `${e.clientX}px`;
-    feedbackElement.style.top = `${e.clientY}px`;
-    feedbackElement.style.width = '30px';
-    feedbackElement.style.height = '30px';
-    feedbackElement.style.borderRadius = '50%';
-    feedbackElement.style.backgroundColor = 'rgba(26, 115, 232, 0.3)';
-    feedbackElement.style.transform = 'translate(-50%, -50%) scale(0)';
-    feedbackElement.style.transition = 'all 0.3s ease';
-    feedbackElement.style.zIndex = '1000';
-    document.body.appendChild(feedbackElement);
-    
-    setTimeout(() => {
-      feedbackElement.style.transform = 'translate(-50%, -50%) scale(1.5)';
-      feedbackElement.style.opacity = '0';
-    }, 10);
-    
-    setTimeout(() => {
-      document.body.removeChild(feedbackElement);
-    }, 300);
-    
     setShotPosition({ x, y });
-    setIsSelectingPosition(false);
-  };
-  
-  // Déterminer le type de tir en fonction de la position sur le terrain
-  const determineShotType = (x, y) => {
-    // Coordonnées du centre du terrain
-    const centerX = 50;
-    const centerY = 50;
-    
-    // Distance par rapport au panier (en haut ou en bas selon la position y)
-    const basketY = y < centerY ? 0 : 100;
-    const distanceToBasket = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - basketY, 2));
-    
-    // Vérifier si c'est un lancer franc (proche du panier et aligné)
-    const isAlignedWithBasket = Math.abs(x - centerX) < 5;
-    const isCloseToBasket = Math.abs(y - basketY) < 20 && Math.abs(y - basketY) > 10;
-    
-    if (isAlignedWithBasket && isCloseToBasket) {
-      return 'lf';
-    }
-    
-    // Vérifier si c'est un tir à 3 points (loin du panier)
-    const threePointDistance = 35; // Ajuster cette valeur selon les dimensions du terrain
-    if (distanceToBasket > threePointDistance) {
-      return '3pts';
-    }
-    
-    // Par défaut, c'est un tir à 2 points
-    return '2pts';
-  };
-  
-  // Enregistrer le tir
-  const handleSaveShot = () => {
-    if (!selectedPlayerId || !shotPosition) return;
-    
-    const isMade = shotResult === 'made';
-    const points = shotType === '3pts' ? 3 : 2;
     
     // Créer un nouvel événement de tir
-    const newShot = {
-      matchId: gameId,
-      type: 'tir',
-      temps: {
-        periode: currentPeriod,
-        tempsRestant: timeRemaining
-      },
-      joueurId: selectedPlayerId,
-      equipeId: selectedTeamId,
-      details: {
-        typeTir: shotType,
-        position: shotPosition,
-        reussi: isMade,
-        assisteParJoueurId: null // À implémenter plus tard
-      }
-    };
+    const player = players.find(p => p.id === selectedPlayerId);
+    const teamId = player.equipeId;
+    const isMade = shotResult === 'made';
     
-    // Mettre à jour le score si le tir est réussi
+    // Calculer les points marqués
+    let points = 0;
     if (isMade) {
-      if (selectedTeamId === game.equipeLocale.id) {
-        setHomeScore(homeScore + points);
+      if (newShotType === '3pts') points = 3;
+      else if (newShotType === '2pts') points = 2;
+      else if (newShotType === 'lf') points = 1;
+    }
+    
+    // Mettre à jour le score
+    if (isMade) {
+      if (teamId === game.equipeLocaleId) {
+        setHomeScore(prevScore => prevScore + points);
       } else {
-        setAwayScore(awayScore + points);
+        setAwayScore(prevScore => prevScore + points);
       }
     }
     
-    // Mettre à jour les statistiques du joueur pour ce match
-    const playerStats = {
+    // Créer l'événement de tir
+    const newShot = {
+      id: `shot_${Date.now()}`,
+      matchId: gameId,
       joueurId: selectedPlayerId,
-      equipeId: selectedTeamId
+      equipeId: teamId,
+      type: 'tir',
+      typeShot: newShotType,
+      reussi: isMade,
+      positionX: x,
+      positionY: y,
+      timestamp: new Date().toISOString(),
+      periode: currentPeriod,
+      tempsRestant: timeRemaining
     };
     
-    if (shotType === '2pts') {
-      playerStats.tirsReussis = isMade ? 1 : 0;
-      playerStats.tirsTentes = 1;
-    } else {
-      playerStats.tirsA3ptsReussis = isMade ? 1 : 0;
-      playerStats.tirsA3ptsTentes = 1;
-    }
-    
-    playerStats.points = isMade ? points : 0;
-    
-    // Dispatcher les actions Redux
+    // Dispatcher l'action pour ajouter le tir
     dispatch(addShot(newShot));
-    dispatch(updatePlayerGameStats({ gameId, playerStats }));
     
-    // Réinitialiser les champs
+    // Réinitialiser l'état de sélection de position
+    setIsSelectingPosition(false);
     setShotPosition(null);
   };
   
-  // Trier les événements par ordre chronologique inverse
-  const sortedEvents = [...events].sort((a, b) => {
-    if (a.temps.periode !== b.temps.periode) {
-      return b.temps.periode - a.temps.periode;
-    }
-    return b.temps.tempsRestant - a.temps.tempsRestant;
-  });
-  
-  // Obtenir le nom du joueur
-  const getPlayerName = (playerId) => {
-    const player = players.find(p => p.id === playerId);
-    return player ? `${player.prenom} ${player.nom}` : 'Joueur inconnu';
-  };
-  
-  // Formater la description d'un événement
-  const formatEventDescription = (event) => {
-    if (event.type === 'tir') {
-      const playerName = getPlayerName(event.joueurId);
-      const teamName = getTeamName(event.equipeId);
-      const result = event.details.reussi ? 'réussit' : 'manque';
-      return `${formatTime(event.temps.tempsRestant)} - ${playerName} (${teamName}) ${result} un tir à ${event.details.typeTir}`;
-    }
-    return 'Événement inconnu';
-  };
-  
-  // Filtrer les tirs pour n'afficher que ceux du match actuel
-  const shotEvents = events.filter(event => event.type === 'tir');
-  
-  useEffect(() => {
-    // Mettre à jour le titre de la page
-    document.title = `Match en direct - ${getTeamName(game?.equipeLocale.id)} vs ${getTeamName(game?.equipeVisiteur.id)}`;
+  // Formater l'événement pour l'affichage
+  const formatEvent = (event) => {
+    const player = players.find(p => p.id === event.joueurId);
+    const playerName = player ? `${player.prenom} ${player.nom}` : 'Joueur inconnu';
+    const teamName = getTeamName(event.equipeId);
     
-    // Réinitialiser le titre quand le composant est démonté
+    if (event.type === 'tir') {
+      return `${playerName} (${teamName}) - ${event.reussi ? 'Tir réussi' : 'Tir manqué'} à ${event.typeShot}`;
+    } else if (event.type === 'rebond') {
+      return `${playerName} (${teamName}) - Rebond`;
+    } else if (event.type === 'passe') {
+      return `${playerName} (${teamName}) - Passe décisive`;
+    }
+    
+    return `${playerName} (${teamName}) - ${event.type}`;
+  };
+  
+  // Mettre à jour le titre de la page
+  useEffect(() => {
+    if (game) {
+      document.title = `Match en direct: ${getTeamName(game.equipeLocaleId)} vs ${getTeamName(game.equipeVisiteurId)}`;
+    }
+    
     return () => {
       document.title = 'Basketball Manager';
     };
@@ -503,7 +551,7 @@ const GameLive = () => {
     <GameLiveContainer>
       <GameHeader>
         <TeamScore>
-          <TeamName>{getTeamName(game.equipeLocale.id)}</TeamName>
+          <TeamName>{getTeamName(game.equipeLocaleId)}</TeamName>
           <Score>{homeScore}</Score>
         </TeamScore>
         
@@ -513,73 +561,110 @@ const GameLive = () => {
         </GameInfo>
         
         <TeamScore>
-          <TeamName>{getTeamName(game.equipeVisiteur.id)}</TeamName>
+          <TeamName>{getTeamName(game.equipeVisiteurId)}</TeamName>
           <Score>{awayScore}</Score>
         </TeamScore>
       </GameHeader>
       
       <HelpText>
-        <strong>Comment ajouter un tir :</strong> 
-        1. Sélectionnez l'équipe et le joueur 
-        2. Choisissez le type de tir (2 ou 3 points) et le résultat (réussi ou manqué) 
-        3. Cliquez sur "Positionner le tir" puis cliquez sur le terrain à l'endroit exact du tir 
-        4. Cliquez sur "Enregistrer le tir" pour sauvegarder
+        <strong>Comment utiliser cette interface :</strong> 
+        <ol>
+          <li>Sélectionnez un joueur dans la liste</li>
+          <li>Pour ajouter un rebond ou une passe décisive, cliquez sur les boutons correspondants</li>
+          <li>Pour enregistrer un tir, cliquez sur "Sélectionner position" puis cliquez sur le terrain</li>
+        </ol>
       </HelpText>
       
       <GameContent>
-        <GameActions>
-          <ActionCard>
-            <ActionTitle>Enregistrer un tir</ActionTitle>
-            
-            <PlayerSelector>
-              <label>Équipe</label>
-              <Select value={selectedTeamId} onChange={handleTeamChange}>
-                <option value="">Sélectionner une équipe</option>
-                <option value={game.equipeLocale.id}>{getTeamName(game.equipeLocale.id)}</option>
-                <option value={game.equipeVisiteur.id}>{getTeamName(game.equipeVisiteur.id)}</option>
-              </Select>
-            </PlayerSelector>
-            
-            <PlayerSelector>
-              <label>Joueur</label>
-              <Select value={selectedPlayerId} onChange={handlePlayerChange} disabled={!selectedTeamId}>
-                <option value="">Sélectionner un joueur</option>
-                {teamPlayers.map(player => (
-                  <option key={player.id} value={player.id}>
-                    {player.prenom} {player.nom} (#{player.numero})
-                  </option>
-                ))}
-              </Select>
-            </PlayerSelector>
-            
-            <ShotTypeSelector>
-              <label>Type de tir</label>
-              <RadioGroup>
-                <RadioLabel>
-                  <input 
-                    type="radio" 
-                    name="shotType" 
-                    value="2pts" 
-                    checked={shotType === '2pts'} 
-                    onChange={handleShotTypeChange} 
-                  />
-                  2 points
-                </RadioLabel>
-                <RadioLabel>
-                  <input 
-                    type="radio" 
-                    name="shotType" 
-                    value="3pts" 
-                    checked={shotType === '3pts'} 
-                    onChange={handleShotTypeChange} 
-                  />
-                  3 points
-                </RadioLabel>
-              </RadioGroup>
-            </ShotTypeSelector>
-            
-            <ShotResultSelector>
-              <label>Résultat</label>
+        <RosterSection>
+          <TeamRoster>
+            <TeamRosterTitle color="#1a73e8">{getTeamName(game.equipeLocaleId)}</TeamRosterTitle>
+            <PlayersList>
+              {homePlayers.map(player => (
+                <PlayerItem 
+                  key={player.id} 
+                  selected={selectedPlayerId === player.id}
+                  onClick={() => handlePlayerSelect(player.id)}
+                >
+                  <PlayerInfo>
+                    <PlayerName>{player.prenom} {player.nom}</PlayerName>
+                    <PlayerNumber>#{player.numero}</PlayerNumber>
+                  </PlayerInfo>
+                  <PlayerActions>
+                    <ActionButton 
+                      color="#e8f5e9" 
+                      hoverColor="#c8e6c9" 
+                      textColor="#2e7d32"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddRebound(player.id);
+                      }}
+                    >
+                      <FaHandPaper size={12} /> Rebond
+                    </ActionButton>
+                    <ActionButton 
+                      color="#e3f2fd" 
+                      hoverColor="#bbdefb" 
+                      textColor="#1565c0"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddAssist(player.id);
+                      }}
+                    >
+                      <FaPlus size={12} /> Passe
+                    </ActionButton>
+                  </PlayerActions>
+                </PlayerItem>
+              ))}
+            </PlayersList>
+          </TeamRoster>
+          
+          <TeamRoster>
+            <TeamRosterTitle color="#f44336">{getTeamName(game.equipeVisiteurId)}</TeamRosterTitle>
+            <PlayersList>
+              {awayPlayers.map(player => (
+                <PlayerItem 
+                  key={player.id} 
+                  selected={selectedPlayerId === player.id}
+                  onClick={() => handlePlayerSelect(player.id)}
+                >
+                  <PlayerInfo>
+                    <PlayerName>{player.prenom} {player.nom}</PlayerName>
+                    <PlayerNumber>#{player.numero}</PlayerNumber>
+                  </PlayerInfo>
+                  <PlayerActions>
+                    <ActionButton 
+                      color="#e8f5e9" 
+                      hoverColor="#c8e6c9" 
+                      textColor="#2e7d32"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddRebound(player.id);
+                      }}
+                    >
+                      <FaHandPaper size={12} /> Rebond
+                    </ActionButton>
+                    <ActionButton 
+                      color="#e3f2fd" 
+                      hoverColor="#bbdefb" 
+                      textColor="#1565c0"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddAssist(player.id);
+                      }}
+                    >
+                      <FaPlus size={12} /> Passe
+                    </ActionButton>
+                  </PlayerActions>
+                </PlayerItem>
+              ))}
+            </PlayersList>
+          </TeamRoster>
+        </RosterSection>
+        
+        <ShotChartSection>
+          <div style={{ flex: 2, display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <RadioGroup>
                 <RadioLabel>
                   <input 
@@ -587,7 +672,7 @@ const GameLive = () => {
                     name="shotResult" 
                     value="made" 
                     checked={shotResult === 'made'} 
-                    onChange={handleShotResultChange} 
+                    onChange={handleShotResultChange}
                   />
                   Réussi
                 </RadioLabel>
@@ -597,81 +682,75 @@ const GameLive = () => {
                     name="shotResult" 
                     value="missed" 
                     checked={shotResult === 'missed'} 
-                    onChange={handleShotResultChange} 
+                    onChange={handleShotResultChange}
                   />
                   Manqué
                 </RadioLabel>
               </RadioGroup>
-            </ShotResultSelector>
+              
+              <Button 
+                primary 
+                disabled={!selectedPlayerId || isSelectingPosition}
+                onClick={handleSelectPositionClick}
+              >
+                <FaBasketballBall style={{ marginRight: '5px' }} />
+                Sélectionner position
+              </Button>
+            </div>
             
             <ShotInstructions isSelecting={isSelectingPosition}>
               {isSelectingPosition 
-                ? "CLIQUEZ SUR LE TERRAIN pour positionner le tir" 
-                : shotPosition 
-                  ? "Position sélectionnée. Vous pouvez enregistrer le tir ou choisir une nouvelle position." 
-                  : "Cliquez sur 'Positionner le tir' pour sélectionner l'emplacement sur le terrain"
-              }
+                ? `Cliquez sur le terrain pour indiquer la position du tir de ${players.find(p => p.id === selectedPlayerId)?.prenom} ${players.find(p => p.id === selectedPlayerId)?.nom}`
+                : 'Sélectionnez un joueur et cliquez sur "Sélectionner position" pour enregistrer un tir'}
             </ShotInstructions>
             
-            <div>
-              <Button 
-                onClick={handleStartPositionSelection} 
-                disabled={!selectedPlayerId}
-                style={{ marginRight: '10px' }}
-              >
-                Positionner le tir
-              </Button>
-              <Button 
-                primary 
-                onClick={handleSaveShot} 
-                disabled={!selectedPlayerId || !shotPosition}
-              >
-                Enregistrer le tir
-              </Button>
-            </div>
-          </ActionCard>
+            <CourtContainer onClick={handleCourtClick}>
+              <BasketballCourt>
+                {/* Afficher les tirs déjà enregistrés */}
+                {shotEvents.map((shot, index) => (
+                  <ShotMarker
+                    key={index}
+                    x={shot.positionX}
+                    y={shot.positionY}
+                    made={shot.reussi}
+                  />
+                ))}
+                
+                {/* Afficher le marqueur temporaire lors de la sélection de position */}
+                {isSelectingPosition && shotPosition && (
+                  <ShotMarker
+                    x={shotPosition.x}
+                    y={shotPosition.y}
+                    made={shotResult === 'made'}
+                    isTemp={true}
+                  />
+                )}
+                
+                {/* Afficher le curseur de position */}
+                {isSelectingPosition && (
+                  <TempPositionMarker />
+                )}
+              </BasketballCourt>
+            </CourtContainer>
+          </div>
           
-          <RecentActions>
-            <ActionTitle>Dernières actions</ActionTitle>
+          <RecentActionsContainer>
+            <RecentActionsTitle>Dernières actions</RecentActionsTitle>
             <ActionsList>
-              {sortedEvents.slice(0, 10).map((event, index) => (
+              {events.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 10).map((event, index) => (
                 <ActionItem key={index}>
-                  {formatEventDescription(event)}
+                  {formatEvent(event)}
                 </ActionItem>
               ))}
-              {sortedEvents.length === 0 && (
-                <ActionItem>Aucune action enregistrée</ActionItem>
+              
+              {events.length === 0 && (
+                <div style={{ padding: '20px 0', textAlign: 'center', color: '#666' }}>
+                  Aucune action enregistrée
+                </div>
               )}
             </ActionsList>
-          </RecentActions>
-        </GameActions>
-        
-        <CourtContainer onClick={handleCourtClick}>
-          <BasketballCourt>
-            {/* Afficher les tirs déjà enregistrés */}
-            {shotEvents.map((shot, index) => (
-              <ShotMarker
-                key={index}
-                x={shot.details.position.x}
-                y={shot.details.position.y}
-                made={shot.details.reussi}
-              />
-            ))}
-            
-            {/* Afficher le marqueur de position temporaire lors de la sélection */}
-            {isSelectingPosition && <TempPositionMarker />}
-            
-            {/* Afficher le marqueur de position sélectionnée */}
-            {shotPosition && (
-              <ShotMarker
-                x={shotPosition.x}
-                y={shotPosition.y}
-                made={shotResult === 'made'}
-                isTemp={true}
-              />
-            )}
-          </BasketballCourt>
-        </CourtContainer>
+          </RecentActionsContainer>
+        </ShotChartSection>
       </GameContent>
     </GameLiveContainer>
   );
