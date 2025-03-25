@@ -130,8 +130,7 @@ const ShotChart = ({
   selectedPlayerId,
   players,
   onCourtClick,
-  onShotResultChange,
-  onSelectPositionClick
+  onShotResultChange
 }) => {
   const selectedPlayer = players.find(p => p.id === selectedPlayerId);
   
@@ -160,21 +159,12 @@ const ShotChart = ({
             Manqué
           </RadioLabel>
         </RadioGroup>
-        
-        <Button 
-          primary 
-          disabled={!selectedPlayerId || isSelectingPosition}
-          onClick={onSelectPositionClick}
-        >
-          <FaBasketballBall style={{ marginRight: '5px' }} />
-          Sélectionner position
-        </Button>
       </div>
       
       <ShotInstructions isSelecting={isSelectingPosition}>
         {isSelectingPosition 
           ? `Cliquez sur le terrain pour indiquer la position du tir de ${selectedPlayer?.prenom} ${selectedPlayer?.nom}`
-          : 'Sélectionnez un joueur et cliquez sur "Sélectionner position" pour enregistrer un tir'}
+          : 'Sélectionnez un joueur dans la liste pour enregistrer un tir'}
       </ShotInstructions>
       
       <CourtContainer onClick={onCourtClick}>

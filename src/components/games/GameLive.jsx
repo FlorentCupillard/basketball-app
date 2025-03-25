@@ -150,6 +150,8 @@ const GameLive = () => {
   // Gérer la sélection d'un joueur
   const handlePlayerSelect = (playerId) => {
     setSelectedPlayerId(playerId);
+    // Activer automatiquement le mode de sélection de position
+    setIsSelectingPosition(true);
   };
   
   // Gérer l'ajout d'un rebond
@@ -168,7 +170,25 @@ const GameLive = () => {
       tempsRestant: timeRemaining
     };
     
+    // Ajouter l'événement
     dispatch({ type: 'events/addEvent', payload: newRebound });
+    
+    // Mettre à jour les statistiques du joueur
+    const playerStats = game.statistiquesJoueurs.find(stats => stats.joueurId === playerId) || {
+      joueurId: playerId,
+      equipeId: teamId,
+      points: 0,
+      rebonds: 0,
+      passesDecisives: 0
+    };
+    
+    dispatch(updatePlayerGameStats({
+      gameId,
+      playerStats: {
+        ...playerStats,
+        rebonds: (playerStats.rebonds || 0) + 1
+      }
+    }));
   };
   
   // Gérer l'ajout d'une passe décisive
@@ -187,7 +207,25 @@ const GameLive = () => {
       tempsRestant: timeRemaining
     };
     
+    // Ajouter l'événement
     dispatch({ type: 'events/addEvent', payload: newAssist });
+    
+    // Mettre à jour les statistiques du joueur
+    const playerStats = game.statistiquesJoueurs.find(stats => stats.joueurId === playerId) || {
+      joueurId: playerId,
+      equipeId: teamId,
+      points: 0,
+      rebonds: 0,
+      passesDecisives: 0
+    };
+    
+    dispatch(updatePlayerGameStats({
+      gameId,
+      playerStats: {
+        ...playerStats,
+        passesDecisives: (playerStats.passesDecisives || 0) + 1
+      }
+    }));
   };
   
   // Gérer le changement de type de tir
@@ -267,8 +305,18 @@ const GameLive = () => {
     if (isMade) {
       if (teamId === game.equipeLocale.id) {
         setHomeScore(prevScore => prevScore + points);
+        // Persister le score dans le store Redux
+        dispatch(updateGameScore({
+          gameId,
+          equipeLocaleScore: homeScore + points
+        }));
       } else {
         setAwayScore(prevScore => prevScore + points);
+        // Persister le score dans le store Redux
+        dispatch(updateGameScore({
+          gameId,
+          equipeVisiteurScore: awayScore + points
+        }));
       }
     }
     
@@ -290,6 +338,46 @@ const GameLive = () => {
     
     // Dispatcher l'action pour ajouter le tir
     dispatch(addShot(newShot));
+    
+    // Mettre à jour les statistiques du joueur
+    const playerStats = game.statistiquesJoueurs.find(stats => stats.joueurId === selectedPlayerId) || {
+      joueurId: selectedPlayerId,
+      equipeId: teamId,
+      points: 0,
+      rebonds: 0,
+      passesDecisives: 0,
+      tirs: {
+        tentes: 0,
+        reussis: 0
+      },
+      tirs3pts: {
+        tentes: 0,
+        reussis: 0
+      }
+    };
+    
+    const updatedStats = {
+      ...playerStats,
+      points: (playerStats.points || 0) + (isMade ? points : 0)
+    };
+    
+    // Mettre à jour les statistiques de tirs
+    if (newShotType === '3pts') {
+      updatedStats.tirs3pts = {
+        tentes: (playerStats.tirs3pts?.tentes || 0) + 1,
+        reussis: (playerStats.tirs3pts?.reussis || 0) + (isMade ? 1 : 0)
+      };
+    } else {
+      updatedStats.tirs = {
+        tentes: (playerStats.tirs?.tentes || 0) + 1,
+        reussis: (playerStats.tirs?.reussis || 0) + (isMade ? 1 : 0)
+      };
+    }
+    
+    dispatch(updatePlayerGameStats({
+      gameId,
+      playerStats: updatedStats
+    }));
     
     // Réinitialiser l'état de sélection de position
     setIsSelectingPosition(false);
@@ -359,7 +447,7 @@ const GameLive = () => {
         <ol>
           <li>Sélectionnez un joueur dans la liste</li>
           <li>Pour ajouter un rebond ou une passe décisive, cliquez sur les boutons correspondants</li>
-          <li>Pour enregistrer un tir, cliquez sur "Sélectionner position" puis cliquez sur le terrain</li>
+          <li>Pour enregistrer un tir, sélectionnez un joueur puis cliquez directement sur le terrain</li>
         </ol>
       </HelpText>
       
@@ -400,7 +488,6 @@ const GameLive = () => {
             players={players}
             onCourtClick={handleCourtClick}
             onShotResultChange={handleShotResultChange}
-            onSelectPositionClick={handleSelectPositionClick}
           />
           
           <RecentActions 
