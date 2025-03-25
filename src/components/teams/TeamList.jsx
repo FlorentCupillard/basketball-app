@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -185,6 +185,31 @@ const SearchButton = styled.button`
 
 const TeamList = () => {
   const teams = useSelector(state => state.teams.teams);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredTeams, setFilteredTeams] = useState([]);
+  
+  // Filtrer les équipes en fonction du terme de recherche
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setFilteredTeams(teams);
+    } else {
+      const filtered = teams.filter(team => 
+        team.nom.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredTeams(filtered);
+    }
+  }, [searchTerm, teams]);
+  
+  // Gérer la soumission du formulaire de recherche
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    // La recherche est déjà effectuée via l'effet useEffect
+  };
+  
+  // Gérer le changement dans le champ de recherche
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
   
   return (
     <TeamListContainer>
@@ -193,47 +218,53 @@ const TeamList = () => {
         <AddTeamButton to="/teams/create"><FaPlus /> Ajouter</AddTeamButton>
       </TeamListHeader>
       
-      <SearchBar>
+      <SearchBar as="form" onSubmit={handleSearchSubmit}>
         <SearchInput 
           type="text" 
           placeholder="Rechercher une équipe..." 
+          value={searchTerm}
+          onChange={handleSearchChange}
         />
-        <SearchButton>
+        <SearchButton type="submit">
           <FaSearch />
         </SearchButton>
       </SearchBar>
       
       <TeamsGrid>
-        {teams.map(team => (
-          <TeamCard key={team.id}>
-            <TeamHeader>
-              <TeamLogo>
-                <img src={team.logo} alt={`Logo ${team.nom}`} />
-              </TeamLogo>
-              <TeamName>{team.nom}</TeamName>
-            </TeamHeader>
-            
-            <TeamStats>
-              <StatItem>
-                <StatValue>{team.statistiquesEquipe.matchsJoues}</StatValue>
-                <StatLabel>Matchs</StatLabel>
-              </StatItem>
-              <StatItem>
-                <StatValue>{team.statistiquesEquipe.victoires}</StatValue>
-                <StatLabel>Victoires</StatLabel>
-              </StatItem>
-              <StatItem>
-                <StatValue>{team.statistiquesEquipe.defaites}</StatValue>
-                <StatLabel>Défaites</StatLabel>
-              </StatItem>
-            </TeamStats>
-            
-            <TeamActions>
-              <ActionButton to={`/teams/${team.id}`}>Détails</ActionButton>
-              <ActionButton to={`/teams/${team.id}/edit`}>Modifier</ActionButton>
-            </TeamActions>
-          </TeamCard>
-        ))}
+        {filteredTeams.length > 0 ? (
+          filteredTeams.map(team => (
+            <TeamCard key={team.id}>
+              <TeamHeader>
+                <TeamLogo>
+                  <img src={team.logo} alt={`Logo ${team.nom}`} />
+                </TeamLogo>
+                <TeamName>{team.nom}</TeamName>
+              </TeamHeader>
+              
+              <TeamStats>
+                <StatItem>
+                  <StatValue>{team.statistiquesEquipe.matchsJoues}</StatValue>
+                  <StatLabel>Matchs</StatLabel>
+                </StatItem>
+                <StatItem>
+                  <StatValue>{team.statistiquesEquipe.victoires}</StatValue>
+                  <StatLabel>Victoires</StatLabel>
+                </StatItem>
+                <StatItem>
+                  <StatValue>{team.statistiquesEquipe.defaites}</StatValue>
+                  <StatLabel>Défaites</StatLabel>
+                </StatItem>
+              </TeamStats>
+              
+              <TeamActions>
+                <ActionButton to={`/teams/${team.id}`}>Détails</ActionButton>
+                <ActionButton to={`/teams/${team.id}/edit`}>Modifier</ActionButton>
+              </TeamActions>
+            </TeamCard>
+          ))
+        ) : (
+          <div>Aucune équipe ne correspond à votre recherche.</div>
+        )}
       </TeamsGrid>
     </TeamListContainer>
   );

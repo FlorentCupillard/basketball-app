@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useSelector } from 'react-redux';
 import { useParams, Link } from 'react-router-dom';
-import { FaArrowLeft, FaPlay, FaEdit, FaChartBar, FaBasketballBall } from 'react-icons/fa';
+import { FaArrowLeft, FaPlay, FaEdit, FaChartBar, FaBasketballBall, FaUser, FaUsers, FaCalendarAlt, FaClock, FaChartLine } from 'react-icons/fa';
 
 const GameDetailContainer = styled.div`
   width: 100%;
@@ -250,6 +250,9 @@ const SectionTitle = styled.h2`
   color: #333;
   border-bottom: 1px solid #eee;
   padding-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 `;
 
 const StatGrid = styled.div`
@@ -267,6 +270,12 @@ const StatCard = styled.div`
   border-radius: 4px;
   padding: 15px;
   text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
 `;
 
 const StatValue = styled.div`
@@ -297,6 +306,12 @@ const PlayerCard = styled.div`
   background-color: #f8f8f8;
   border-radius: 4px;
   padding: 10px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
 `;
 
 const PlayerPhoto = styled.div`
@@ -342,6 +357,12 @@ const EventItem = styled.div`
   padding: 10px;
   border-radius: 4px;
   background-color: #f8f8f8;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  }
 `;
 
 const EventTime = styled.div`
@@ -371,6 +392,28 @@ const ShotChartContainer = styled.div`
   margin: 0 auto;
 `;
 
+const PlayerLink = styled(Link)`
+  color: #1a73e8;
+  text-decoration: none;
+  font-weight: 600;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+const TeamPlayersList = styled.div`
+  margin-top: 20px;
+`;
+
+const TeamPlayersTitle = styled.h3`
+  font-size: 16px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
 const GameDetail = () => {
   const { gameId } = useParams();
   const games = useSelector(state => state.games.games);
@@ -383,8 +426,10 @@ const GameDetail = () => {
   const [homeTeam, setHomeTeam] = useState(null);
   const [awayTeam, setAwayTeam] = useState(null);
   const [gameEvents, setGameEvents] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
+    setIsLoading(true);
     // Trouver le match correspondant à l'ID
     const foundGame = games.find(g => g.id === gameId);
     if (foundGame) {
@@ -399,12 +444,48 @@ const GameDetail = () => {
       // Filtrer les événements du match
       const matchEvents = events.filter(e => e.matchId === gameId);
       setGameEvents(matchEvents);
+      
+      setIsLoading(false);
+    } else {
+      setIsLoading(false);
     }
   }, [gameId, games, teams, events]);
   
-  if (!game || !homeTeam || !awayTeam) {
-    return <div>Chargement des détails du match...</div>;
+  if (isLoading) {
+    return (
+      <GameDetailContainer>
+        <BackButton to="/games">
+          <FaArrowLeft /> Retour aux matchs
+        </BackButton>
+        <ContentSection>
+          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <div>Chargement des détails du match...</div>
+          </div>
+        </ContentSection>
+      </GameDetailContainer>
+    );
   }
+  
+  if (!game || !homeTeam || !awayTeam) {
+    return (
+      <GameDetailContainer>
+        <BackButton to="/games">
+          <FaArrowLeft /> Retour aux matchs
+        </BackButton>
+        <ContentSection>
+          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <div>Match non trouvé</div>
+          </div>
+        </ContentSection>
+      </GameDetailContainer>
+    );
+  }
+  
+  // Formater la date du match
+  const formatGameDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  };
   
   // Calculer les statistiques du match
   const totalShots = gameEvents.filter(e => e.type === 'tir').length;
@@ -415,25 +496,32 @@ const GameDetail = () => {
   const madeThreePtShots = gameEvents.filter(e => e.type === 'tir' && e.typeShot === '3pts' && e.reussi).length;
   const threePtPercentage = threePtShots > 0 ? Math.round((madeThreePtShots / threePtShots) * 100) : 0;
   
-  // Obtenir les joueurs des deux équipes qui ont participé au match
+  const twoPtShots = gameEvents.filter(e => e.type === 'tir' && e.typeShot === '2pts').length;
+  const madeTwoPtShots = gameEvents.filter(e => e.type === 'tir' && e.typeShot === '2pts' && e.reussi).length;
+  const twoPtPercentage = twoPtShots > 0 ? Math.round((madeTwoPtShots / twoPtShots) * 100) : 0;
+  
+  // Filtrer les joueurs par équipe
   const homePlayers = players.filter(p => p.equipeId === homeTeam.id);
   const awayPlayers = players.filter(p => p.equipeId === awayTeam.id);
   
-  // Obtenir les statistiques des joueurs pour ce match
+  // Obtenir les statistiques d'un joueur pour ce match
   const getPlayerStats = (playerId) => {
     const playerEvents = gameEvents.filter(e => e.joueurId === playerId);
-    const points = playerEvents.filter(e => e.type === 'tir' && e.reussi)
-      .reduce((total, event) => {
+    const points = playerEvents.reduce((total, event) => {
+      if (event.type === 'tir' && event.reussi) {
         if (event.typeShot === '3pts') return total + 3;
         if (event.typeShot === '2pts') return total + 2;
         if (event.typeShot === 'lf') return total + 1;
-        return total;
-      }, 0);
+      }
+      return total;
+    }, 0);
     
     return {
       points,
       shots: playerEvents.filter(e => e.type === 'tir').length,
-      madeShots: playerEvents.filter(e => e.type === 'tir' && e.reussi).length
+      madeShots: playerEvents.filter(e => e.type === 'tir' && e.reussi).length,
+      rebounds: playerEvents.filter(e => e.type === 'rebond').length,
+      assists: playerEvents.filter(e => e.type === 'passe').length
     };
   };
   
@@ -465,7 +553,7 @@ const GameDetail = () => {
               {game.scoreVisiteur}
             </ScoreDisplay>
             <GameDate>
-              {new Date(game.date).toLocaleDateString('fr-FR')} - {new Date(game.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+              <FaCalendarAlt style={{ marginRight: '5px' }} /> {formatGameDate(game.date)} - {new Date(game.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
             </GameDate>
           </ScoreContainer>
           
@@ -478,16 +566,11 @@ const GameDetail = () => {
         </GameInfo>
         
         <GameActions>
-          {!game.termine && (
-            <ActionButton to={`/games/${game.id}/live`} primary>
-              <FaPlay /> {game.enCours ? 'Suivre en direct' : 'Commencer le match'}
-            </ActionButton>
-          )}
           <ActionButton to={`/games/${game.id}/edit`}>
             <FaEdit /> Modifier
           </ActionButton>
-          <ActionButton to={`/shot-chart?game=${game.id}`}>
-            <FaChartBar /> Voir la carte des tirs
+          <ActionButton to={`/games/${game.id}/live`} primary>
+            <FaPlay /> Mode Live
           </ActionButton>
         </GameActions>
       </GameHeader>
@@ -497,62 +580,37 @@ const GameDetail = () => {
           active={activeTab === 'summary'} 
           onClick={() => setActiveTab('summary')}
         >
-          Résumé
+          <FaChartBar style={{ marginRight: '5px' }} /> Résumé
         </Tab>
         <Tab 
           active={activeTab === 'stats'} 
           onClick={() => setActiveTab('stats')}
         >
-          Statistiques
+          <FaChartLine style={{ marginRight: '5px' }} /> Statistiques
         </Tab>
         <Tab 
           active={activeTab === 'players'} 
           onClick={() => setActiveTab('players')}
         >
-          Joueurs
+          <FaUsers style={{ marginRight: '5px' }} /> Joueurs
         </Tab>
         <Tab 
           active={activeTab === 'timeline'} 
           onClick={() => setActiveTab('timeline')}
         >
-          Chronologie
+          <FaClock style={{ marginRight: '5px' }} /> Chronologie
         </Tab>
         <Tab 
           active={activeTab === 'shots'} 
           onClick={() => setActiveTab('shots')}
         >
-          Tirs
+          <FaBasketballBall style={{ marginRight: '5px' }} /> Tirs
         </Tab>
       </TabsContainer>
       
       {activeTab === 'summary' && (
         <ContentSection>
-          <SectionTitle>Résumé du match</SectionTitle>
-          
-          <StatGrid>
-            <StatCard>
-              <StatValue>{totalShots}</StatValue>
-              <StatLabel>Tirs tentés</StatLabel>
-            </StatCard>
-            <StatCard>
-              <StatValue>{madeShots}</StatValue>
-              <StatLabel>Tirs réussis</StatLabel>
-            </StatCard>
-            <StatCard>
-              <StatValue>{shotPercentage}%</StatValue>
-              <StatLabel>% de réussite</StatLabel>
-            </StatCard>
-            <StatCard>
-              <StatValue>{threePtPercentage}%</StatValue>
-              <StatLabel>% à 3 points</StatLabel>
-            </StatCard>
-          </StatGrid>
-        </ContentSection>
-      )}
-      
-      {activeTab === 'stats' && (
-        <ContentSection>
-          <SectionTitle>Statistiques détaillées</SectionTitle>
+          <SectionTitle><FaChartBar style={{ marginRight: '5px' }} /> Résumé du match</SectionTitle>
           
           <StatGrid>
             <StatCard>
@@ -569,15 +627,96 @@ const GameDetail = () => {
             </StatCard>
             <StatCard>
               <StatValue>{threePtShots}</StatValue>
-              <StatLabel>Tirs à 3pts tentés</StatLabel>
+              <StatLabel>Tirs à 3pts</StatLabel>
             </StatCard>
             <StatCard>
               <StatValue>{madeThreePtShots}</StatValue>
-              <StatLabel>Tirs à 3pts réussis</StatLabel>
+              <StatLabel>3pts réussis</StatLabel>
+            </StatCard>
+            <StatCard>
+              <StatValue>{gameEvents.length}</StatValue>
+              <StatLabel>Événements</StatLabel>
+            </StatCard>
+          </StatGrid>
+          
+          <TeamPlayersList>
+            <TeamPlayersTitle><FaUsers style={{ marginRight: '5px' }} /> Meilleurs joueurs</TeamPlayersTitle>
+            <PlayersList>
+              {players
+                .filter(p => p.equipeId === homeTeam.id || p.equipeId === awayTeam.id)
+                .sort((a, b) => {
+                  const statsA = getPlayerStats(a.id);
+                  const statsB = getPlayerStats(b.id);
+                  return statsB.points - statsA.points;
+                })
+                .slice(0, 4)
+                .map(player => {
+                  const stats = getPlayerStats(player.id);
+                  const team = player.equipeId === homeTeam.id ? homeTeam : awayTeam;
+                  return (
+                    <PlayerCard key={player.id}>
+                      <PlayerPhoto>
+                        <img src={player.photo} alt={`${player.prenom} ${player.nom}`} />
+                      </PlayerPhoto>
+                      <PlayerInfo>
+                        <PlayerName>
+                          <PlayerLink to={`/players/${player.id}`}>
+                            {player.prenom} {player.nom}
+                          </PlayerLink>
+                          <span style={{ color: '#666', fontSize: '12px', marginLeft: '5px' }}>
+                            ({team.nom})
+                          </span>
+                        </PlayerName>
+                        <PlayerStats>{stats.points} pts, {stats.madeShots}/{stats.shots} tirs</PlayerStats>
+                      </PlayerInfo>
+                    </PlayerCard>
+                  );
+                })}
+            </PlayersList>
+          </TeamPlayersList>
+        </ContentSection>
+      )}
+      
+      {activeTab === 'stats' && (
+        <ContentSection>
+          <SectionTitle><FaChartLine style={{ marginRight: '5px' }} /> Statistiques détaillées</SectionTitle>
+          
+          <StatGrid>
+            <StatCard>
+              <StatValue>{totalShots}</StatValue>
+              <StatLabel>Tirs tentés</StatLabel>
+            </StatCard>
+            <StatCard>
+              <StatValue>{madeShots}</StatValue>
+              <StatLabel>Tirs réussis</StatLabel>
+            </StatCard>
+            <StatCard>
+              <StatValue>{shotPercentage}%</StatValue>
+              <StatLabel>% de réussite</StatLabel>
+            </StatCard>
+            <StatCard>
+              <StatValue>{twoPtShots}</StatValue>
+              <StatLabel>Tirs à 2pts</StatLabel>
+            </StatCard>
+            <StatCard>
+              <StatValue>{madeTwoPtShots}</StatValue>
+              <StatLabel>2pts réussis</StatLabel>
+            </StatCard>
+            <StatCard>
+              <StatValue>{twoPtPercentage}%</StatValue>
+              <StatLabel>% à 2pts</StatLabel>
+            </StatCard>
+            <StatCard>
+              <StatValue>{threePtShots}</StatValue>
+              <StatLabel>Tirs à 3pts</StatLabel>
+            </StatCard>
+            <StatCard>
+              <StatValue>{madeThreePtShots}</StatValue>
+              <StatLabel>3pts réussis</StatLabel>
             </StatCard>
             <StatCard>
               <StatValue>{threePtPercentage}%</StatValue>
-              <StatLabel>% à 3 points</StatLabel>
+              <StatLabel>% à 3pts</StatLabel>
             </StatCard>
           </StatGrid>
         </ContentSection>
@@ -585,7 +724,7 @@ const GameDetail = () => {
       
       {activeTab === 'players' && (
         <ContentSection>
-          <SectionTitle>{homeTeam.nom}</SectionTitle>
+          <SectionTitle><FaUsers style={{ marginRight: '5px' }} /> {homeTeam.nom}</SectionTitle>
           <PlayersList>
             {homePlayers.map(player => {
               const stats = getPlayerStats(player.id);
@@ -595,15 +734,19 @@ const GameDetail = () => {
                     <img src={player.photo} alt={`${player.prenom} ${player.nom}`} />
                   </PlayerPhoto>
                   <PlayerInfo>
-                    <PlayerName>{player.prenom} {player.nom} #{player.numero}</PlayerName>
-                    <PlayerStats>{stats.points} pts, {stats.madeShots}/{stats.shots} tirs</PlayerStats>
+                    <PlayerName>
+                      <PlayerLink to={`/players/${player.id}`}>
+                        {player.prenom} {player.nom} #{player.numero}
+                      </PlayerLink>
+                    </PlayerName>
+                    <PlayerStats>{stats.points} pts, {stats.madeShots}/{stats.shots} tirs, {stats.rebounds} reb, {stats.assists} passes</PlayerStats>
                   </PlayerInfo>
                 </PlayerCard>
               );
             })}
           </PlayersList>
           
-          <SectionTitle style={{ marginTop: '20px' }}>{awayTeam.nom}</SectionTitle>
+          <SectionTitle style={{ marginTop: '20px' }}><FaUsers style={{ marginRight: '5px' }} /> {awayTeam.nom}</SectionTitle>
           <PlayersList>
             {awayPlayers.map(player => {
               const stats = getPlayerStats(player.id);
@@ -613,8 +756,12 @@ const GameDetail = () => {
                     <img src={player.photo} alt={`${player.prenom} ${player.nom}`} />
                   </PlayerPhoto>
                   <PlayerInfo>
-                    <PlayerName>{player.prenom} {player.nom} #{player.numero}</PlayerName>
-                    <PlayerStats>{stats.points} pts, {stats.madeShots}/{stats.shots} tirs</PlayerStats>
+                    <PlayerName>
+                      <PlayerLink to={`/players/${player.id}`}>
+                        {player.prenom} {player.nom} #{player.numero}
+                      </PlayerLink>
+                    </PlayerName>
+                    <PlayerStats>{stats.points} pts, {stats.madeShots}/{stats.shots} tirs, {stats.rebounds} reb, {stats.assists} passes</PlayerStats>
                   </PlayerInfo>
                 </PlayerCard>
               );
@@ -625,7 +772,7 @@ const GameDetail = () => {
       
       {activeTab === 'timeline' && (
         <ContentSection>
-          <SectionTitle>Chronologie des événements</SectionTitle>
+          <SectionTitle><FaClock style={{ marginRight: '5px' }} /> Chronologie des événements</SectionTitle>
           
           <EventsList>
             {gameEvents.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map((event, index) => {
@@ -634,9 +781,9 @@ const GameDetail = () => {
               
               let description = '';
               if (event.type === 'tir') {
-                description = `${player ? `${player.prenom} ${player.nom}` : 'Joueur inconnu'} (${team ? team.nom : 'Équipe inconnue'}) - Tir ${event.typeShot} ${event.reussi ? 'réussi' : 'manqué'}`;
+                description = `${player ? `${player.prenom} ${player.nom}` : 'Joueur inconnu'} (${team ? team.nom : 'Équipe inconnue'}) - ${event.reussi ? 'Tir réussi' : 'Tir manqué'} à ${event.typeShot}`;
               } else {
-                description = `Événement: ${event.type}`;
+                description = `${player ? `${player.prenom} ${player.nom}` : 'Joueur inconnu'} (${team ? team.nom : 'Équipe inconnue'}) - ${event.type}`;
               }
               
               return (
@@ -659,7 +806,7 @@ const GameDetail = () => {
       
       {activeTab === 'shots' && (
         <ContentSection>
-          <SectionTitle>Carte des tirs</SectionTitle>
+          <SectionTitle><FaBasketballBall style={{ marginRight: '5px' }} /> Carte des tirs</SectionTitle>
           
           <ShotChartContainer>
             <svg viewBox="0 0 500 470" width="100%" height="auto">
@@ -668,60 +815,56 @@ const GameDetail = () => {
               
               {/* Ligne médiane */}
               <line x1="0" y1="235" x2="500" y2="235" stroke="#333" strokeWidth="2" />
-              <circle cx="250" cy="235" r="30" fill="none" stroke="#333" strokeWidth="2" />
               
               {/* Cercle central */}
-              <circle cx="250" cy="235" r="60" fill="none" stroke="#333" strokeWidth="2" />
-              
-              {/* Zone restrictive bas */}
-              <rect x="175" y="370" width="150" height="100" fill="none" stroke="#333" strokeWidth="2" />
-              <line x1="175" y1="420" x2="325" y2="420" stroke="#333" strokeWidth="2" />
-              
-              {/* Zone restrictive haut */}
-              <rect x="175" y="0" width="150" height="100" fill="none" stroke="#333" strokeWidth="2" />
-              <line x1="175" y1="50" x2="325" y2="50" stroke="#333" strokeWidth="2" />
-              
-              {/* Cercle bas */}
-              <circle cx="250" cy="370" r="60" fill="none" stroke="#333" strokeWidth="2" />
-              
-              {/* Cercle haut */}
-              <circle cx="250" cy="100" r="60" fill="none" stroke="#333" strokeWidth="2" />
-              
-              {/* Ligne à 3 points bas */}
-              <path d="M 100,470 A 150,150 0 0,1 400,470" fill="none" stroke="#333" strokeWidth="2" />
-              
-              {/* Ligne à 3 points haut */}
-              <path d="M 100,0 A 150,150 0 0,0 400,0" fill="none" stroke="#333" strokeWidth="2" />
-              
-              {/* Panier bas */}
-              <circle cx="250" cy="440" r="5" fill="#333" />
-              <line x1="230" y1="440" x2="270" y2="440" stroke="#333" strokeWidth="3" />
+              <circle cx="250" cy="235" r="30" fill="none" stroke="#333" strokeWidth="2" />
               
               {/* Panier haut */}
-              <circle cx="250" cy="30" r="5" fill="#333" />
-              <line x1="230" y1="30" x2="270" y2="30" stroke="#333" strokeWidth="3" />
+              <circle cx="250" cy="60" r="15" fill="none" stroke="#333" strokeWidth="2" />
+              <rect x="200" y="0" width="100" height="60" fill="none" stroke="#333" strokeWidth="2" />
               
-              {/* Afficher les tirs */}
-              {gameEvents.filter(e => e.type === 'tir').map((shot, index) => (
-                <g key={index}>
-                  <circle 
-                    cx={shot.positionX * 500} 
-                    cy={shot.positionY * 470} 
-                    r={8}
-                    fill={shot.reussi ? '#4CAF50' : '#F44336'}
-                  />
-                </g>
-              ))}
+              {/* Panier bas */}
+              <circle cx="250" cy="410" r="15" fill="none" stroke="#333" strokeWidth="2" />
+              <rect x="200" y="410" width="100" height="60" fill="none" stroke="#333" strokeWidth="2" />
+              
+              {/* Ligne à 3 points haut */}
+              <path d="M 100,0 A 150,150 0 0 1 400,0" fill="none" stroke="#333" strokeWidth="2" />
+              
+              {/* Ligne à 3 points bas */}
+              <path d="M 100,470 A 150,150 0 0 0 400,470" fill="none" stroke="#333" strokeWidth="2" />
+              
+              {/* Tirs */}
+              {gameEvents.filter(e => e.type === 'tir').map((shot, index) => {
+                const player = players.find(p => p.id === shot.joueurId);
+                const team = teams.find(t => t.id === shot.equipeId);
+                
+                return (
+                  <g key={index}>
+                    <circle 
+                      cx={shot.positionX} 
+                      cy={shot.positionY} 
+                      r="8" 
+                      fill={shot.reussi ? "#4CAF50" : "#F44336"} 
+                      stroke="#fff" 
+                      strokeWidth="1"
+                    />
+                    <title>
+                      {player ? `${player.prenom} ${player.nom}` : 'Joueur inconnu'} ({team ? team.nom : 'Équipe inconnue'})
+                      {shot.reussi ? ' - Tir réussi' : ' - Tir manqué'} à {shot.typeShot}
+                    </title>
+                  </g>
+                );
+              })}
             </svg>
             
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '15px' }}>
+            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', gap: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                 <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#4CAF50' }}></div>
-                <span>Tirs réussis</span>
+                <span>Tir réussi</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                 <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#F44336' }}></div>
-                <span>Tirs manqués</span>
+                <span>Tir manqué</span>
               </div>
             </div>
           </ShotChartContainer>

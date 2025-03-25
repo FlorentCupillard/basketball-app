@@ -9,6 +9,7 @@ import TeamDetail from './components/teams/TeamDetail';
 import PlayerList from './components/players/PlayerList';
 import PlayerCreateForm from './components/players/PlayerCreateForm';
 import PlayerEditForm from './components/players/PlayerEditForm';
+import PlayerDetail from './components/players/PlayerDetail';
 import GameList from './components/games/GameList';
 import GameDetail from './components/games/GameDetail';
 import GameLive from './components/games/GameLive';
@@ -540,6 +541,7 @@ function App() {
           <Route path="/teams/:teamId/edit" element={<TeamEditForm />} />
           <Route path="/players" element={<PlayerList />} />
           <Route path="/players/create" element={<PlayerCreateForm />} />
+          <Route path="/players/:playerId" element={<PlayerDetail />} />
           <Route path="/players/:playerId/edit" element={<PlayerEditForm />} />
           <Route path="/games" element={<GameList />} />
           <Route path="/games/create" element={<GameCreateForm />} />

@@ -352,7 +352,7 @@ const ShotChart = () => {
   // Obtenir le nom de l'équipe à partir de l'ID
   const getTeamName = (teamId) => {
     const team = teams.find(team => team.id === teamId);
-    return team ? team.nom : 'Équipe inconnue';
+    return team ? team.nom : 'Équipe non assignée';
   };
   
   // Obtenir le nom du match à partir de l'ID
