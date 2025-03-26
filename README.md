@@ -13,10 +13,11 @@ Une application React complète pour la gestion des matchs de basketball, des é
 - **Statistiques détaillées** : Suivi des points, rebonds, passes et autres statistiques par joueur et par match
 - **Interface responsive** : Adaptée aux ordinateurs, tablettes et smartphones avec menu burger
 - **Ajout de tirs en temps réel** : Possibilité d'ajouter des tirs pendant un match en les positionnant directement sur le terrain
+- **Persistance des données** : Sauvegarde des données via JSON Server
 
 ## Prérequis
 
-- Node.js (version 14.0.0 ou supérieure)
+- Node.js (version 20.18.0 ou supérieure recommandée)
 - npm (version 6.0.0 ou supérieure)
 
 ## Installation
@@ -34,7 +35,15 @@ cd basketball-app
 npm install
 ```
 
-3. **Lancer l'application en mode développement**
+3. **Lancer l'application avec JSON Server (recommandé)**
+
+```bash
+npm run dev
+```
+
+Cette commande démarre simultanément l'application React (port 3000) et JSON Server (port 3001) pour la persistance des données.
+
+4. **Ou lancer uniquement l'application React (sans persistance)**
 
 ```bash
 npm start
@@ -42,22 +51,44 @@ npm start
 
 L'application sera accessible à l'adresse [http://localhost:3000](http://localhost:3000).
 
+## Persistance des données avec JSON Server
+
+L'application utilise JSON Server pour la persistance des données. Voici comment cela fonctionne :
+
+1. **Structure des données** : Toutes les données sont stockées dans le fichier `data/db.json`
+2. **API REST** : JSON Server expose une API REST sur le port 3001
+3. **Interface de visualisation** : Vous pouvez accéder directement aux données via http://localhost:3001
+4. **Endpoints disponibles** :
+   - `http://localhost:3001/teams` - Gestion des équipes
+   - `http://localhost:3001/players` - Gestion des joueurs
+   - `http://localhost:3001/games` - Gestion des matchs
+   - `http://localhost:3001/events` - Gestion des événements (tirs, passes, etc.)
+
+Pour lancer uniquement le serveur JSON :
+
+```bash
+npm run server
+```
+
 ## Structure du projet
 
 ```
 basketball-app/
-├── public/                  # Fichiers statiques
-├── src/                     # Code source
-│   ├── components/          # Composants React
-│   │   ├── court/          # Composants liés au terrain et aux tirs
-│   │   ├── games/          # Composants liés aux matchs
-│   │   ├── players/        # Composants liés aux joueurs
-│   │   └── teams/          # Composants liés aux équipes
-│   ├── store/               # État global (Redux)
-│   │   └── slices/         # Slices Redux pour chaque entité
-│   ├── App.js               # Composant principal
-│   └── index.js             # Point d'entrée
-└── package.json             # Dépendances et scripts
+├── data/                   # Données JSON pour la persistance
+│   └── db.json            # Base de données JSON Server
+├── public/                 # Fichiers statiques
+├── src/                    # Code source
+│   ├── api/                # Services API pour JSON Server
+│   ├── components/         # Composants React
+│   │   ├── court/         # Composants liés au terrain et aux tirs
+│   │   ├── games/         # Composants liés aux matchs
+│   │   ├── players/       # Composants liés aux joueurs
+│   │   └── teams/         # Composants liés aux équipes
+│   ├── store/              # État global (Redux)
+│   │   └── slices/        # Slices Redux pour chaque entité
+│   ├── App.js              # Composant principal
+│   └── index.js            # Point d'entrée
+└── package.json            # Dépendances et scripts
 ```
 
 ## Guide d'utilisation
@@ -94,6 +125,9 @@ basketball-app/
    - Cliquez sur "Positionner le tir"
    - Cliquez sur le terrain à l'endroit où le tir a été effectué
    - Indiquez si le tir est réussi ou manqué
+4. Pour terminer le match :
+   - Cliquez sur le bouton "Terminer le match"
+   - Le score final et les statistiques des joueurs seront enregistrés
 
 ### Visualisation des tirs
 
@@ -101,6 +135,12 @@ basketball-app/
 2. Utilisez les filtres pour sélectionner les joueurs, matchs, périodes, etc.
 3. Les tirs s'affichent sur le terrain (verts pour réussis, rouges pour manqués)
 4. Les statistiques de tir s'affichent en dessous du terrain
+
+### Consultation des statistiques des joueurs
+
+1. Accédez à la page de détails d'un match
+2. Cliquez sur l'onglet "Joueurs"
+3. Les statistiques complètes de chaque joueur pour ce match sont affichées
 
 ## Déploiement
 
@@ -112,6 +152,8 @@ npm run build
 
 Cette commande crée un dossier `build` avec les fichiers optimisés pour la production. Vous pouvez ensuite déployer ce dossier sur n'importe quel hébergeur statique (Netlify, Vercel, GitHub Pages, etc.).
 
+Pour la persistance des données en production, vous devrez configurer un serveur JSON Server ou migrer vers une solution de base de données plus robuste.
+
 ## Technologies utilisées
 
 - React
@@ -119,6 +161,7 @@ Cette commande crée un dossier `build` avec les fichiers optimisés pour la pro
 - React Router
 - Styled Components
 - React Icons
+- JSON Server (pour la persistance des données)
 
 ## Licence
 
