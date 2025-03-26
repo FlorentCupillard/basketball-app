@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
 import { addShot } from '../../store/slices/eventsSlice';
-import { updatePlayerGameStats, updateGameScore, updateGameStatus } from '../../store/slices/gamesSlice';
+import { updatePlayerGameStatsAsync, updateGameScore, updateGameStatus } from '../../store/slices/gamesSlice';
 import { FaBasketballBall, FaHandPaper, FaPlus } from 'react-icons/fa';
 
 // Composants importés
@@ -202,7 +202,7 @@ const GameLive = () => {
       passesDecisives: 0
     };
     
-    dispatch(updatePlayerGameStats({
+    dispatch(updatePlayerGameStatsAsync({
       gameId,
       playerStats: {
         ...playerStats,
@@ -239,7 +239,7 @@ const GameLive = () => {
       passesDecisives: 0
     };
     
-    dispatch(updatePlayerGameStats({
+    dispatch(updatePlayerGameStatsAsync({
       gameId,
       playerStats: {
         ...playerStats,
@@ -394,7 +394,7 @@ const GameLive = () => {
       };
     }
     
-    dispatch(updatePlayerGameStats({
+    dispatch(updatePlayerGameStatsAsync({
       gameId,
       playerStats: updatedStats
     }));
