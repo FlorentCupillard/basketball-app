@@ -19,7 +19,7 @@ const ShotMarker = styled.div`
   width: ${props => props.isTemp ? '16px' : '12px'};
   height: ${props => props.isTemp ? '16px' : '12px'};
   border-radius: 50%;
-  background-color: ${props => props.made === 'true' ? 'green' : 'red'};
+  background-color: ${props => props.made === true ? 'green' : 'red'};
   transform: translate(-50%, -50%);
   border: ${props => props.isTemp ? '2px solid white' : '1px solid white'};
   box-shadow: 0 0 ${props => props.isTemp ? '4px' : '2px'} rgba(0, 0, 0, 0.5);
@@ -133,40 +133,40 @@ const ShotChart = ({
   onShotResultChange
 }) => {
   const selectedPlayer = players.find(p => p.id === selectedPlayerId);
-  
+
   return (
     <div style={{ flex: 2, display: 'flex', flexDirection: 'column', gap: '15px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <RadioGroup>
           <RadioLabel>
-            <input 
-              type="radio" 
-              name="shotResult" 
-              value="made" 
-              checked={shotResult === 'made'} 
+            <input
+              type="radio"
+              name="shotResult"
+              value="made"
+              checked={shotResult === 'made'}
               onChange={onShotResultChange}
             />
             Réussi
           </RadioLabel>
           <RadioLabel>
-            <input 
-              type="radio" 
-              name="shotResult" 
-              value="missed" 
-              checked={shotResult === 'missed'} 
+            <input
+              type="radio"
+              name="shotResult"
+              value="missed"
+              checked={shotResult === 'missed'}
               onChange={onShotResultChange}
             />
             Manqué
           </RadioLabel>
         </RadioGroup>
       </div>
-      
+
       <ShotInstructions isSelecting={isSelectingPosition}>
-        {isSelectingPosition 
+        {isSelectingPosition
           ? `Cliquez sur le terrain pour indiquer la position du tir de ${selectedPlayer?.prenom} ${selectedPlayer?.nom}`
           : 'Sélectionnez un joueur dans la liste pour enregistrer un tir'}
       </ShotInstructions>
-      
+
       <CourtContainer onClick={onCourtClick}>
         <BasketballCourt>
           {/* Afficher les tirs déjà enregistrés */}
@@ -178,7 +178,7 @@ const ShotChart = ({
               made={shot.reussi}
             />
           ))}
-          
+
           {/* Afficher le marqueur temporaire lors de la sélection de position */}
           {isSelectingPosition && shotPosition && (
             <ShotMarker
@@ -188,7 +188,7 @@ const ShotChart = ({
               isTemp={true}
             />
           )}
-          
+
           {/* Afficher le curseur de position */}
           {isSelectingPosition && (
             <TempPositionMarker />
