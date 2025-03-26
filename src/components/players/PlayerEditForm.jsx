@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
-import { updatePlayer } from '../../store/slices/playersSlice';
+import { updatePlayerAsync } from '../../store/slices/playersSlice';
 import { FaEdit, FaSave, FaTimes, FaArrowLeft, FaUser, FaChartBar } from 'react-icons/fa';
 
 const FormContainer = styled.div`
@@ -409,12 +409,12 @@ const PlayerEditForm = () => {
     const updatedPlayer = {
       ...formData,
       numero: parseInt(formData.numero),
-      taille: formData.taille ? parseInt(formData.taille) : null,
-      poids: formData.poids ? parseInt(formData.poids) : null
+      taille: formData.taille ? parseFloat(formData.taille) : null,
+      poids: formData.poids ? parseFloat(formData.poids) : null
     };
     
     // Dispatcher l'action pour mettre à jour le joueur
-    dispatch(updatePlayer(updatedPlayer));
+    dispatch(updatePlayerAsync({ id: player.id, player: updatedPlayer }));
     
     // Rediriger vers la page des joueurs
     navigate('/players');
@@ -589,8 +589,9 @@ const PlayerEditForm = () => {
                 type="number" 
                 name="matchsJoues" 
                 value={formData.statistiquesGlobales.matchsJoues} 
-                onChange={handleStatsChange} 
-                min="0"
+                readOnly
+                disabled
+                style={{ backgroundColor: '#f5f5f5' }}
               />
             </StatItem>
             
@@ -600,8 +601,9 @@ const PlayerEditForm = () => {
                 type="number" 
                 name="minutesJouees" 
                 value={formData.statistiquesGlobales.minutesJouees} 
-                onChange={handleStatsChange} 
-                min="0"
+                readOnly
+                disabled
+                style={{ backgroundColor: '#f5f5f5' }}
               />
             </StatItem>
             
@@ -611,8 +613,9 @@ const PlayerEditForm = () => {
                 type="number" 
                 name="points" 
                 value={formData.statistiquesGlobales.points} 
-                onChange={handleStatsChange} 
-                min="0"
+                readOnly
+                disabled
+                style={{ backgroundColor: '#f5f5f5' }}
               />
             </StatItem>
             
@@ -622,8 +625,9 @@ const PlayerEditForm = () => {
                 type="number" 
                 name="rebonds" 
                 value={formData.statistiquesGlobales.rebonds} 
-                onChange={handleStatsChange} 
-                min="0"
+                readOnly
+                disabled
+                style={{ backgroundColor: '#f5f5f5' }}
               />
             </StatItem>
             
@@ -633,8 +637,9 @@ const PlayerEditForm = () => {
                 type="number" 
                 name="passesDecisives" 
                 value={formData.statistiquesGlobales.passesDecisives} 
-                onChange={handleStatsChange} 
-                min="0"
+                readOnly
+                disabled
+                style={{ backgroundColor: '#f5f5f5' }}
               />
             </StatItem>
             
@@ -644,8 +649,9 @@ const PlayerEditForm = () => {
                 type="number" 
                 name="interceptions" 
                 value={formData.statistiquesGlobales.interceptions} 
-                onChange={handleStatsChange} 
-                min="0"
+                readOnly
+                disabled
+                style={{ backgroundColor: '#f5f5f5' }}
               />
             </StatItem>
             
@@ -655,8 +661,9 @@ const PlayerEditForm = () => {
                 type="number" 
                 name="contres" 
                 value={formData.statistiquesGlobales.contres} 
-                onChange={handleStatsChange} 
-                min="0"
+                readOnly
+                disabled
+                style={{ backgroundColor: '#f5f5f5' }}
               />
             </StatItem>
             
@@ -666,8 +673,9 @@ const PlayerEditForm = () => {
                 type="number" 
                 name="ballesPerdues" 
                 value={formData.statistiquesGlobales.ballesPerdues} 
-                onChange={handleStatsChange} 
-                min="0"
+                readOnly
+                disabled
+                style={{ backgroundColor: '#f5f5f5' }}
               />
             </StatItem>
             
@@ -677,8 +685,9 @@ const PlayerEditForm = () => {
                 type="number" 
                 name="fautes" 
                 value={formData.statistiquesGlobales.fautes} 
-                onChange={handleStatsChange} 
-                min="0"
+                readOnly
+                disabled
+                style={{ backgroundColor: '#f5f5f5' }}
               />
             </StatItem>
             
@@ -688,8 +697,9 @@ const PlayerEditForm = () => {
                 type="number" 
                 name="tirsReussis" 
                 value={formData.statistiquesGlobales.tirsReussis} 
-                onChange={handleStatsChange} 
-                min="0"
+                readOnly
+                disabled
+                style={{ backgroundColor: '#f5f5f5' }}
               />
             </StatItem>
             
@@ -699,8 +709,9 @@ const PlayerEditForm = () => {
                 type="number" 
                 name="tirsTentes" 
                 value={formData.statistiquesGlobales.tirsTentes} 
-                onChange={handleStatsChange} 
-                min="0"
+                readOnly
+                disabled
+                style={{ backgroundColor: '#f5f5f5' }}
               />
             </StatItem>
             
@@ -710,8 +721,9 @@ const PlayerEditForm = () => {
                 type="number" 
                 name="tirsA3ptsReussis" 
                 value={formData.statistiquesGlobales.tirsA3ptsReussis} 
-                onChange={handleStatsChange} 
-                min="0"
+                readOnly
+                disabled
+                style={{ backgroundColor: '#f5f5f5' }}
               />
             </StatItem>
             
@@ -721,8 +733,9 @@ const PlayerEditForm = () => {
                 type="number" 
                 name="tirsA3ptsTentes" 
                 value={formData.statistiquesGlobales.tirsA3ptsTentes} 
-                onChange={handleStatsChange} 
-                min="0"
+                readOnly
+                disabled
+                style={{ backgroundColor: '#f5f5f5' }}
               />
             </StatItem>
             
@@ -732,8 +745,9 @@ const PlayerEditForm = () => {
                 type="number" 
                 name="lancersFrancsReussis" 
                 value={formData.statistiquesGlobales.lancersFrancsReussis} 
-                onChange={handleStatsChange} 
-                min="0"
+                readOnly
+                disabled
+                style={{ backgroundColor: '#f5f5f5' }}
               />
             </StatItem>
             
@@ -743,8 +757,9 @@ const PlayerEditForm = () => {
                 type="number" 
                 name="lancersFrancsTentes" 
                 value={formData.statistiquesGlobales.lancersFrancsTentes} 
-                onChange={handleStatsChange} 
-                min="0"
+                readOnly
+                disabled
+                style={{ backgroundColor: '#f5f5f5' }}
               />
             </StatItem>
           </StatsGrid>
