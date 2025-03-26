@@ -1,70 +1,82 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { eventsApi } from '../../api/apiService';
 
-// Données initiales de test pour les événements (tirs, passes, etc.)
-const initialState = {
-  events: [
-    {
-      id: 'event1',
-      matchId: 'match2',
-      type: 'tir',
-      temps: {
-        periode: 1,
-        tempsRestant: 540 // 9:00 restantes
-      },
-      joueurId: 'player3',
-      equipeId: 'team3',
-      details: {
-        typeTir: '3pts',
-        position: {
-          x: 75,
-          y: 30
-        },
-        reussi: true,
-        assisteParJoueurId: null
-      }
-    },
-    {
-      id: 'event2',
-      matchId: 'match2',
-      type: 'tir',
-      temps: {
-        periode: 2,
-        tempsRestant: 420 // 7:00 restantes
-      },
-      joueurId: 'player1',
-      equipeId: 'team1',
-      details: {
-        typeTir: '2pts',
-        position: {
-          x: 25,
-          y: 20
-        },
-        reussi: true,
-        assisteParJoueurId: null
-      }
-    },
-    {
-      id: 'event3',
-      matchId: 'match2',
-      type: 'tir',
-      temps: {
-        periode: 3,
-        tempsRestant: 300 // 5:00 restantes
-      },
-      joueurId: 'player3',
-      equipeId: 'team3',
-      details: {
-        typeTir: '2pts',
-        position: {
-          x: 50,
-          y: 15
-        },
-        reussi: false,
-        assisteParJoueurId: null
-      }
+// Thunks pour les opérations asynchrones
+export const fetchEvents = createAsyncThunk(
+  'events/fetchEvents',
+  async (_, { rejectWithValue }) => {
+    try {
+      return await eventsApi.getAll();
+    } catch (error) {
+      return rejectWithValue(error.message);
     }
-  ],
-  status: 'idle',
+  }
+);
+
+export const fetchEventsByGame = createAsyncThunk(
+  'events/fetchEventsByGame',
+  async (gameId, { rejectWithValue }) => {
+    try {
+      return await eventsApi.getByGame(gameId);
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const addEventAsync = createAsyncThunk(
+  'events/addEvent',
+  async (event, { rejectWithValue }) => {
+    try {
+      return await eventsApi.create(event);
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const addShotAsync = createAsyncThunk(
+  'events/addShot',
+  async (shotEvent, { rejectWithValue }) => {
+    try {
+      const event = {
+        id: `event${Date.now()}`,
+        type: 'tir',
+        ...shotEvent
+      };
+      return await eventsApi.create(event);
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const updateEventAsync = createAsyncThunk(
+  'events/updateEvent',
+  async ({ id, event }, { rejectWithValue }) => {
+    try {
+      return await eventsApi.update(id, event);
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const deleteEventAsync = createAsyncThunk(
+  'events/deleteEvent',
+  async (id, { rejectWithValue }) => {
+    try {
+      await eventsApi.delete(id);
+      return id;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+const initialState = {
+  events: [],
+  status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
   error: null
 };
 
@@ -72,12 +84,11 @@ const eventsSlice = createSlice({
   name: 'events',
   initialState,
   reducers: {
-    // Ajouter un événement
+    // Gardons les reducers synchrones pour la compatibilité
     addEvent: (state, action) => {
       state.events.push(action.payload);
     },
     
-    // Mettre à jour un événement
     updateEvent: (state, action) => {
       const { id } = action.payload;
       const index = state.events.findIndex(event => event.id === id);
@@ -86,13 +97,11 @@ const eventsSlice = createSlice({
       }
     },
     
-    // Supprimer un événement
     deleteEvent: (state, action) => {
       const id = action.payload;
       state.events = state.events.filter(event => event.id !== id);
     },
     
-    // Ajouter un tir
     addShot: (state, action) => {
       const shotEvent = {
         id: `event${state.events.length + 1}`,
@@ -102,19 +111,56 @@ const eventsSlice = createSlice({
       state.events.push(shotEvent);
     },
     
-    // Filtrer les événements par match
     filterEventsByGame: (state, action) => {
       const gameId = action.payload;
       return state.events.filter(event => event.matchId === gameId);
     },
     
-    // Filtrer les tirs par joueur
     filterShotsByPlayer: (state, action) => {
       const playerId = action.payload;
       return state.events.filter(
         event => event.type === 'tir' && event.joueurId === playerId
       );
     }
+  },
+  extraReducers: (builder) => {
+    builder
+      // Gestion de fetchEvents
+      .addCase(fetchEvents.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(fetchEvents.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.events = action.payload;
+      })
+      .addCase(fetchEvents.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
+      })
+      // Gestion de fetchEventsByGame
+      .addCase(fetchEventsByGame.fulfilled, (state, action) => {
+        // Ne pas remplacer tous les événements, juste filtrer pour l'affichage
+        // Les événements spécifiques au match sont gérés dans le composant
+      })
+      // Gestion de addEventAsync
+      .addCase(addEventAsync.fulfilled, (state, action) => {
+        state.events.push(action.payload);
+      })
+      // Gestion de addShotAsync
+      .addCase(addShotAsync.fulfilled, (state, action) => {
+        state.events.push(action.payload);
+      })
+      // Gestion de updateEventAsync
+      .addCase(updateEventAsync.fulfilled, (state, action) => {
+        const index = state.events.findIndex(event => event.id === action.payload.id);
+        if (index !== -1) {
+          state.events[index] = action.payload;
+        }
+      })
+      // Gestion de deleteEventAsync
+      .addCase(deleteEventAsync.fulfilled, (state, action) => {
+        state.events = state.events.filter(event => event.id !== action.payload);
+      });
   }
 });
 

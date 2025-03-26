@@ -1,86 +1,116 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { gamesApi } from '../../api/apiService';
 
-// Données initiales de test pour les matchs
-const initialState = {
-  games: [
-    {
-      id: 'match1',
-      date: '2025-03-25T20:00:00',
-      lieuId: 'lieu1',
-      equipeLocale: {
-        id: 'team1',
-        score: 0
-      },
-      equipeVisiteur: {
-        id: 'team2',
-        score: 0
-      },
-      statut: 'à venir',
-      periodes: [],
-      evenements: [],
-      statistiquesJoueurs: []
-    },
-    {
-      id: 'match2',
-      date: '2025-03-20T19:00:00',
-      lieuId: 'lieu2',
-      equipeLocale: {
-        id: 'team3',
-        score: 105
-      },
-      equipeVisiteur: {
-        id: 'team1',
-        score: 98
-      },
-      statut: 'terminé',
-      periodes: [
-        { numero: 1, scoreLocal: 28, scoreVisiteur: 25 },
-        { numero: 2, scoreLocal: 24, scoreVisiteur: 22 },
-        { numero: 3, scoreLocal: 26, scoreVisiteur: 30 },
-        { numero: 4, scoreLocal: 27, scoreVisiteur: 21 }
-      ],
-      evenements: ['event1', 'event2', 'event3'],
-      statistiquesJoueurs: [
-        {
-          joueurId: 'player3',
-          equipeId: 'team3',
-          minutesJouees: 36,
-          points: 32,
-          rebonds: 8,
-          passesDecisives: 5,
-          interceptions: 1,
-          contres: 2,
-          ballesPerdues: 3,
-          fautes: 2,
-          tirsReussis: 12,
-          tirsTentes: 20,
-          tirsA3ptsReussis: 4,
-          tirsA3ptsTentes: 8,
-          lancersFrancsReussis: 4,
-          lancersFrancsTentes: 5
-        },
-        {
-          joueurId: 'player1',
-          equipeId: 'team1',
-          minutesJouees: 38,
-          points: 28,
-          rebonds: 10,
-          passesDecisives: 7,
-          interceptions: 2,
-          contres: 1,
-          ballesPerdues: 4,
-          fautes: 3,
-          tirsReussis: 10,
-          tirsTentes: 22,
-          tirsA3ptsReussis: 2,
-          tirsA3ptsTentes: 6,
-          lancersFrancsReussis: 6,
-          lancersFrancsTentes: 8
-        }
-      ]
+// Thunks pour les opérations asynchrones
+export const fetchGames = createAsyncThunk(
+  'games/fetchGames',
+  async (_, { rejectWithValue }) => {
+    try {
+      return await gamesApi.getAll();
+    } catch (error) {
+      return rejectWithValue(error.message);
     }
-  ],
-  status: 'idle',
+  }
+);
+
+export const addGameAsync = createAsyncThunk(
+  'games/addGame',
+  async (game, { rejectWithValue }) => {
+    try {
+      return await gamesApi.create(game);
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const updateGameAsync = createAsyncThunk(
+  'games/updateGame',
+  async ({ id, game }, { rejectWithValue }) => {
+    try {
+      return await gamesApi.update(id, game);
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const updateGameScoreAsync = createAsyncThunk(
+  'games/updateGameScore',
+  async ({ gameId, equipeLocaleScore, equipeVisiteurScore }, { rejectWithValue }) => {
+    try {
+      const game = await gamesApi.getById(gameId);
+      const updatedGame = { ...game };
+      
+      if (equipeLocaleScore !== undefined) {
+        updatedGame.equipeLocale.score = equipeLocaleScore;
+      }
+      if (equipeVisiteurScore !== undefined) {
+        updatedGame.equipeVisiteur.score = equipeVisiteurScore;
+      }
+      
+      return await gamesApi.update(gameId, updatedGame);
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const updateGameStatusAsync = createAsyncThunk(
+  'games/updateGameStatus',
+  async ({ gameId, status }, { rejectWithValue }) => {
+    try {
+      const game = await gamesApi.getById(gameId);
+      const updatedGame = { ...game, statut: status };
+      return await gamesApi.update(gameId, updatedGame);
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const updatePlayerGameStatsAsync = createAsyncThunk(
+  'games/updatePlayerGameStats',
+  async ({ gameId, playerStats }, { rejectWithValue }) => {
+    try {
+      const game = await gamesApi.getById(gameId);
+      const updatedGame = { ...game };
+      
+      const playerIndex = updatedGame.statistiquesJoueurs.findIndex(
+        stats => stats.joueurId === playerStats.joueurId
+      );
+      
+      if (playerIndex !== -1) {
+        updatedGame.statistiquesJoueurs[playerIndex] = {
+          ...updatedGame.statistiquesJoueurs[playerIndex],
+          ...playerStats
+        };
+      } else {
+        updatedGame.statistiquesJoueurs.push(playerStats);
+      }
+      
+      return await gamesApi.update(gameId, updatedGame);
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const deleteGameAsync = createAsyncThunk(
+  'games/deleteGame',
+  async (id, { rejectWithValue }) => {
+    try {
+      await gamesApi.delete(id);
+      return id;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+const initialState = {
+  games: [],
+  status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
   error: null
 };
 
@@ -88,12 +118,11 @@ const gamesSlice = createSlice({
   name: 'games',
   initialState,
   reducers: {
-    // Ajouter un match
+    // Gardons les reducers synchrones pour la compatibilité
     addGame: (state, action) => {
       state.games.push(action.payload);
     },
     
-    // Mettre à jour un match
     updateGame: (state, action) => {
       const { id } = action.payload;
       const index = state.games.findIndex(game => game.id === id);
@@ -102,13 +131,11 @@ const gamesSlice = createSlice({
       }
     },
     
-    // Supprimer un match
     deleteGame: (state, action) => {
       const id = action.payload;
       state.games = state.games.filter(game => game.id !== id);
     },
     
-    // Mettre à jour le score d'un match
     updateGameScore: (state, action) => {
       const { gameId, equipeLocaleScore, equipeVisiteurScore } = action.payload;
       const game = state.games.find(game => game.id === gameId);
@@ -122,7 +149,6 @@ const gamesSlice = createSlice({
       }
     },
     
-    // Ajouter une période à un match
     addPeriod: (state, action) => {
       const { gameId, period } = action.payload;
       const game = state.games.find(game => game.id === gameId);
@@ -131,7 +157,6 @@ const gamesSlice = createSlice({
       }
     },
     
-    // Mettre à jour le statut d'un match
     updateGameStatus: (state, action) => {
       const { gameId, status } = action.payload;
       const game = state.games.find(game => game.id === gameId);
@@ -140,7 +165,6 @@ const gamesSlice = createSlice({
       }
     },
     
-    // Ajouter un événement à un match
     addEventToGame: (state, action) => {
       const { gameId, eventId } = action.payload;
       const game = state.games.find(game => game.id === gameId);
@@ -149,7 +173,6 @@ const gamesSlice = createSlice({
       }
     },
     
-    // Ajouter ou mettre à jour les statistiques d'un joueur pour un match
     updatePlayerGameStats: (state, action) => {
       const { gameId, playerStats } = action.payload;
       const game = state.games.find(game => game.id === gameId);
@@ -168,6 +191,57 @@ const gamesSlice = createSlice({
         }
       }
     }
+  },
+  extraReducers: (builder) => {
+    builder
+      // Gestion de fetchGames
+      .addCase(fetchGames.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(fetchGames.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.games = action.payload;
+      })
+      .addCase(fetchGames.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
+      })
+      // Gestion de addGameAsync
+      .addCase(addGameAsync.fulfilled, (state, action) => {
+        state.games.push(action.payload);
+      })
+      // Gestion de updateGameAsync
+      .addCase(updateGameAsync.fulfilled, (state, action) => {
+        const index = state.games.findIndex(game => game.id === action.payload.id);
+        if (index !== -1) {
+          state.games[index] = action.payload;
+        }
+      })
+      // Gestion de updateGameScoreAsync
+      .addCase(updateGameScoreAsync.fulfilled, (state, action) => {
+        const index = state.games.findIndex(game => game.id === action.payload.id);
+        if (index !== -1) {
+          state.games[index] = action.payload;
+        }
+      })
+      // Gestion de updateGameStatusAsync
+      .addCase(updateGameStatusAsync.fulfilled, (state, action) => {
+        const index = state.games.findIndex(game => game.id === action.payload.id);
+        if (index !== -1) {
+          state.games[index] = action.payload;
+        }
+      })
+      // Gestion de updatePlayerGameStatsAsync
+      .addCase(updatePlayerGameStatsAsync.fulfilled, (state, action) => {
+        const index = state.games.findIndex(game => game.id === action.payload.id);
+        if (index !== -1) {
+          state.games[index] = action.payload;
+        }
+      })
+      // Gestion de deleteGameAsync
+      .addCase(deleteGameAsync.fulfilled, (state, action) => {
+        state.games = state.games.filter(game => game.id !== action.payload);
+      });
   }
 });
 

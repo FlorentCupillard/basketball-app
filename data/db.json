@@ -1,0 +1,204 @@
+{
+  "teams": [
+    {
+      "id": "team1",
+      "nom": "Lakers",
+      "ville": "Los Angeles",
+      "logo": "https://via.placeholder.com/150"
+    },
+    {
+      "id": "team2",
+      "nom": "Warriors",
+      "ville": "Golden State",
+      "logo": "https://via.placeholder.com/150"
+    },
+    {
+      "id": "team3",
+      "nom": "Bulls",
+      "ville": "Chicago",
+      "logo": "https://via.placeholder.com/150"
+    }
+  ],
+  "players": [
+    {
+      "id": "player1",
+      "prenom": "LeBron",
+      "nom": "James",
+      "numero": 23,
+      "equipeId": "team1",
+      "photo": "https://via.placeholder.com/150"
+    },
+    {
+      "id": "player2",
+      "prenom": "Anthony",
+      "nom": "Davis",
+      "numero": 3,
+      "equipeId": "team1",
+      "photo": "https://via.placeholder.com/150"
+    },
+    {
+      "id": "player3",
+      "prenom": "Stephen",
+      "nom": "Curry",
+      "numero": 30,
+      "equipeId": "team2",
+      "photo": "https://via.placeholder.com/150"
+    },
+    {
+      "id": "player4",
+      "prenom": "Klay",
+      "nom": "Thompson",
+      "numero": 11,
+      "equipeId": "team2",
+      "photo": "https://via.placeholder.com/150"
+    },
+    {
+      "id": "player5",
+      "prenom": "Zach",
+      "nom": "LaVine",
+      "numero": 8,
+      "equipeId": "team3",
+      "photo": "https://via.placeholder.com/150"
+    }
+  ],
+  "games": [
+    {
+      "id": "match1",
+      "date": "2025-03-25T20:00:00",
+      "lieuId": "lieu1",
+      "equipeLocale": {
+        "id": "team1",
+        "score": 0
+      },
+      "equipeVisiteur": {
+        "id": "team2",
+        "score": 0
+      },
+      "statut": "à venir",
+      "periodes": [],
+      "evenements": [],
+      "statistiquesJoueurs": []
+    },
+    {
+      "id": "match2",
+      "date": "2025-03-20T19:00:00",
+      "lieuId": "lieu2",
+      "equipeLocale": {
+        "id": "team3",
+        "score": 105
+      },
+      "equipeVisiteur": {
+        "id": "team1",
+        "score": 98
+      },
+      "statut": "terminé",
+      "periodes": [
+        { "numero": 1, "scoreLocal": 28, "scoreVisiteur": 25 },
+        { "numero": 2, "scoreLocal": 24, "scoreVisiteur": 22 },
+        { "numero": 3, "scoreLocal": 26, "scoreVisiteur": 30 },
+        { "numero": 4, "scoreLocal": 27, "scoreVisiteur": 21 }
+      ],
+      "evenements": ["event1", "event2", "event3"],
+      "statistiquesJoueurs": [
+        {
+          "joueurId": "player3",
+          "equipeId": "team3",
+          "minutesJouees": 36,
+          "points": 32,
+          "rebonds": 8,
+          "passesDecisives": 5,
+          "interceptions": 1,
+          "contres": 2,
+          "ballesPerdues": 3,
+          "fautes": 2,
+          "tirsReussis": 12,
+          "tirsTentes": 20,
+          "tirsA3ptsReussis": 4,
+          "tirsA3ptsTentes": 8,
+          "lancersFrancsReussis": 4,
+          "lancersFrancsTentes": 5
+        },
+        {
+          "joueurId": "player1",
+          "equipeId": "team1",
+          "minutesJouees": 38,
+          "points": 28,
+          "rebonds": 10,
+          "passesDecisives": 7,
+          "interceptions": 2,
+          "contres": 1,
+          "ballesPerdues": 4,
+          "fautes": 3,
+          "tirsReussis": 10,
+          "tirsTentes": 22,
+          "tirsA3ptsReussis": 2,
+          "tirsA3ptsTentes": 6,
+          "lancersFrancsReussis": 6,
+          "lancersFrancsTentes": 8
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "event1",
+      "matchId": "match2",
+      "type": "tir",
+      "temps": {
+        "periode": 1,
+        "tempsRestant": 540
+      },
+      "joueurId": "player3",
+      "equipeId": "team3",
+      "details": {
+        "typeTir": "3pts",
+        "position": {
+          "x": 75,
+          "y": 30
+        },
+        "reussi": true,
+        "assisteParJoueurId": null
+      }
+    },
+    {
+      "id": "event2",
+      "matchId": "match2",
+      "type": "tir",
+      "temps": {
+        "periode": 2,
+        "tempsRestant": 420
+      },
+      "joueurId": "player1",
+      "equipeId": "team1",
+      "details": {
+        "typeTir": "2pts",
+        "position": {
+          "x": 25,
+          "y": 20
+        },
+        "reussi": true,
+        "assisteParJoueurId": null
+      }
+    },
+    {
+      "id": "event3",
+      "matchId": "match2",
+      "type": "tir",
+      "temps": {
+        "periode": 3,
+        "tempsRestant": 300
+      },
+      "joueurId": "player3",
+      "equipeId": "team3",
+      "details": {
+        "typeTir": "2pts",
+        "position": {
+          "x": 50,
+          "y": 15
+        },
+        "reussi": false,
+        "assisteParJoueurId": null
+      }
+    }
+  ]
+}
