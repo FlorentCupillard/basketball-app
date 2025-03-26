@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { FaClock, FaStopwatch } from 'react-icons/fa';
+import { FaClock, FaStopwatch, FaFlag } from 'react-icons/fa';
 
 const GameControlsContainer = styled.div`
   display: flex;
@@ -29,6 +29,27 @@ const ControlsRow = styled.div`
   
   @media (max-width: 768px) {
     flex-direction: column;
+  }
+`;
+
+const FinishButton = styled.button`
+  background-color: #d32f2f;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 15px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background-color: #b71c1c;
   }
 `;
 
@@ -77,7 +98,9 @@ const GameControls = ({
   currentPeriod, 
   timeRemaining, 
   onPeriodChange, 
-  onTimeChange 
+  onTimeChange,
+  onFinishGame,
+  gameId
 }) => {
   // Convertir les secondes en format mm:ss pour l'input
   const formatTimeForInput = (seconds) => {
@@ -97,6 +120,12 @@ const GameControls = ({
     if (/^\d+:\d{0,2}$/.test(timeString)) {
       const seconds = parseTimeInput(timeString);
       onTimeChange(seconds);
+    }
+  };
+
+  const handleFinishGame = () => {
+    if (window.confirm('Êtes-vous sûr de vouloir terminer ce match ? Cette action enregistrera le score final.')) {
+      onFinishGame();
     }
   };
 
@@ -135,6 +164,9 @@ const GameControls = ({
           />
         </ControlGroup>
       </ControlsRow>
+      <FinishButton onClick={handleFinishGame}>
+        <FaFlag /> Terminer le match
+      </FinishButton>
     </GameControlsContainer>
   );
 };

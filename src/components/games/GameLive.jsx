@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { addShot } from '../../store/slices/eventsSlice';
-import { updatePlayerGameStats, updateGameScore } from '../../store/slices/gamesSlice';
+import { updatePlayerGameStats, updateGameScore, updateGameStatus } from '../../store/slices/gamesSlice';
 import { FaBasketballBall, FaHandPaper, FaPlus } from 'react-icons/fa';
 
 // Composants importés
@@ -107,6 +107,7 @@ const HelpText = styled.div`
 const GameLive = () => {
   const { gameId } = useParams();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   
   // Récupérer les données du match, des équipes et des joueurs depuis le store Redux
   const game = useSelector(state => state.games.games.find(g => g.id === gameId));
@@ -138,6 +139,25 @@ const GameLive = () => {
   const getTeamName = (teamId) => {
     const team = teams.find(team => team.id === teamId);
     return team ? team.nom : 'Équipe non assignée';
+  };
+  
+  // Gérer la fin du match
+  const handleFinishGame = () => {
+    // Sauvegarder le score final
+    dispatch(updateGameScore({
+      gameId,
+      equipeLocaleScore: homeScore,
+      equipeVisiteurScore: awayScore
+    }));
+    
+    // Changer le statut du match à "terminé"
+    dispatch(updateGameStatus({
+      gameId,
+      status: 'terminé'
+    }));
+    
+    // Rediriger vers la page de détails du match
+    navigate(`/games/${gameId}`);
   };
   
   // Formater le temps restant (mm:ss)
@@ -390,15 +410,25 @@ const GameLive = () => {
     const playerName = player ? `${player.prenom} ${player.nom}` : 'Joueur inconnu';
     const teamName = getTeamName(event.equipeId);
     
+    // Formater le temps restant
+    const timeStr = formatTime(event.tempsRestant || 0);
+    // Formater la période (quart temps)
+    const periodeStr = event.periode ? `Q${event.periode}` : 'Q?';
+    
+    // Informations de base de l'action
+    let actionText = '';
     if (event.type === 'tir') {
-      return `${playerName} (${teamName}) - ${event.reussi ? 'Tir réussi' : 'Tir manqué'} à ${event.typeShot}`;
+      actionText = `${event.reussi ? 'Tir réussi' : 'Tir manqué'} à ${event.typeShot}`;
     } else if (event.type === 'rebond') {
-      return `${playerName} (${teamName}) - Rebond`;
+      actionText = 'Rebond';
     } else if (event.type === 'passe') {
-      return `${playerName} (${teamName}) - Passe décisive`;
+      actionText = 'Passe décisive';
+    } else {
+      actionText = event.type;
     }
     
-    return `${playerName} (${teamName}) - ${event.type}`;
+    // Retourner le texte formaté avec période et temps
+    return `[${periodeStr} ${timeStr}] ${playerName} (${teamName}) - ${actionText}`;
   };
   
   // Mettre à jour le titre de la page
@@ -440,6 +470,8 @@ const GameLive = () => {
         timeRemaining={timeRemaining}
         onPeriodChange={setCurrentPeriod}
         onTimeChange={setTimeRemaining}
+        onFinishGame={handleFinishGame}
+        gameId={gameId}
       />
       
       <HelpText>

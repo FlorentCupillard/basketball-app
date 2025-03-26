@@ -506,6 +506,21 @@ const GameDetail = () => {
   
   // Obtenir les statistiques d'un joueur pour ce match
   const getPlayerStats = (playerId) => {
+    // Vérifier d'abord si les statistiques sont déjà enregistrées
+    if (game && game.statistiquesJoueurs && game.statistiquesJoueurs.length > 0) {
+      const savedStats = game.statistiquesJoueurs.find(stats => stats.joueurId === playerId);
+      if (savedStats) {
+        return {
+          points: savedStats.points || 0,
+          shots: (savedStats.tirs?.tentes || 0) + (savedStats.tirs3pts?.tentes || 0),
+          madeShots: (savedStats.tirs?.reussis || 0) + (savedStats.tirs3pts?.reussis || 0),
+          rebounds: savedStats.rebonds || 0,
+          assists: savedStats.passesDecisives || 0
+        };
+      }
+    }
+    
+    // Fallback: calculer à partir des événements si les statistiques ne sont pas enregistrées
     const playerEvents = gameEvents.filter(e => e.joueurId === playerId);
     const points = playerEvents.reduce((total, event) => {
       if (event.type === 'tir' && event.reussi) {
