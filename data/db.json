@@ -4,19 +4,34 @@
       "id": "team1",
       "nom": "Lakers",
       "ville": "Los Angeles",
-      "logo": "https://via.placeholder.com/150"
+      "logo": "https://via.placeholder.com/150",
+      "statistiquesEquipe": {
+        "matchsJoues": 10,
+        "victoires": 7,
+        "defaites": 3
+      }
     },
     {
       "id": "team2",
       "nom": "Warriors",
       "ville": "Golden State",
-      "logo": "https://via.placeholder.com/150"
+      "logo": "https://via.placeholder.com/150",
+      "statistiquesEquipe": {
+        "matchsJoues": 12,
+        "victoires": 8,
+        "defaites": 4
+      }
     },
     {
       "id": "team3",
       "nom": "Bulls",
       "ville": "Chicago",
-      "logo": "https://via.placeholder.com/150"
+      "logo": "https://via.placeholder.com/150",
+      "statistiquesEquipe": {
+        "matchsJoues": 11,
+        "victoires": 5,
+        "defaites": 6
+      }
     }
   ],
   "players": [
@@ -26,7 +41,12 @@
       "nom": "James",
       "numero": 23,
       "equipeId": "team1",
-      "photo": "https://via.placeholder.com/150"
+      "photo": "https://via.placeholder.com/150",
+      "statistiquesGlobales": {
+        "points": 28.5,
+        "rebonds": 7.8,
+        "passesDecisives": 8.2
+      }
     },
     {
       "id": "player2",
@@ -34,7 +54,12 @@
       "nom": "Davis",
       "numero": 3,
       "equipeId": "team1",
-      "photo": "https://via.placeholder.com/150"
+      "photo": "https://via.placeholder.com/150",
+      "statistiquesGlobales": {
+        "points": 24.2,
+        "rebonds": 10.5,
+        "passesDecisives": 3.1
+      }
     },
     {
       "id": "player3",
@@ -42,7 +67,12 @@
       "nom": "Curry",
       "numero": 30,
       "equipeId": "team2",
-      "photo": "https://via.placeholder.com/150"
+      "photo": "https://via.placeholder.com/150",
+      "statistiquesGlobales": {
+        "points": 30.1,
+        "rebonds": 5.2,
+        "passesDecisives": 6.3
+      }
     },
     {
       "id": "player4",
@@ -50,7 +80,12 @@
       "nom": "Thompson",
       "numero": 11,
       "equipeId": "team2",
-      "photo": "https://via.placeholder.com/150"
+      "photo": "https://via.placeholder.com/150",
+      "statistiquesGlobales": {
+        "points": 21.5,
+        "rebonds": 3.8,
+        "passesDecisives": 2.4
+      }
     },
     {
       "id": "player5",
@@ -58,7 +93,12 @@
       "nom": "LaVine",
       "numero": 8,
       "equipeId": "team3",
-      "photo": "https://via.placeholder.com/150"
+      "photo": "https://via.placeholder.com/150",
+      "statistiquesGlobales": {
+        "points": 25.7,
+        "rebonds": 4.9,
+        "passesDecisives": 4.2
+      }
     }
   ],
   "games": [
