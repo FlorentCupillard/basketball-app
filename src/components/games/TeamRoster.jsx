@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { FaBasketballBall, FaHandPaper, FaPlus } from 'react-icons/fa';
+import { useSelector } from 'react-redux';
 
 const PlayersList = styled.div`
   display: flex;
@@ -75,18 +76,27 @@ const PlayerStats = styled.div`
 const TeamRoster = ({ 
   title, 
   titleColor, 
-  players, 
+  teamId,
   selectedPlayerId, 
   onPlayerSelect, 
   onAddRebound, 
   onAddAssist,
-  gameStats
+  gameStats,
+  isLive,
+  onUpdatePlayerStats
 }) => {
+  // Utiliser useSelector pour obtenir les joueurs directement
+  const allPlayers = useSelector(state => state.players.players);
+  
+  // Filtrer les joueurs par équipe si teamId est fourni
+  const teamPlayers = teamId ? allPlayers.filter(player => player.equipeId === teamId) : [];
+  
   // Fonction pour obtenir les statistiques d'un joueur
   const getPlayerStats = (playerId) => {
     if (!gameStats) return null;
     return gameStats.find(stats => stats.joueurId === playerId);
   };
+  
   return (
     <div>
       <h3 style={{ 
@@ -99,46 +109,58 @@ const TeamRoster = ({
         {title}
       </h3>
       <PlayersList>
-        {players.length > 0 ? (
-          players.map(player => (
+        {teamPlayers && teamPlayers.length > 0 ? (
+          teamPlayers.map(player => (
             <PlayerItem 
               key={player.id} 
               selected={selectedPlayerId === player.id}
-              onClick={() => onPlayerSelect(player.id)}
+              onClick={() => onPlayerSelect && onPlayerSelect(player.id)}
             >
               <PlayerInfo>
                 <PlayerName>{player.prenom} {player.nom}</PlayerName>
                 <PlayerNumber>#{player.numero}</PlayerNumber>
-                {getPlayerStats(player.id) && (
+                {getPlayerStats && getPlayerStats(player.id) && (
                   <PlayerStats>
                     {getPlayerStats(player.id).points || 0}pts {getPlayerStats(player.id).rebonds || 0}reb {getPlayerStats(player.id).passesDecisives || 0}pd
                   </PlayerStats>
                 )}
               </PlayerInfo>
-              <PlayerActions>
-                <ActionButton 
-                  color="#e8f5e9" 
-                  hoverColor="#c8e6c9" 
-                  textColor="#2e7d32"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onAddRebound(player.id);
-                  }}
-                >
-                  <FaHandPaper size={12} /> Rebond
-                </ActionButton>
-                <ActionButton 
-                  color="#e3f2fd" 
-                  hoverColor="#bbdefb" 
-                  textColor="#1565c0"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onAddAssist(player.id);
-                  }}
-                >
-                  <FaPlus size={12} /> Passe
-                </ActionButton>
-              </PlayerActions>
+              {isLive && (
+                <PlayerActions>
+                  <ActionButton 
+                    color="#e8f5e9" 
+                    hoverColor="#c8e6c9" 
+                    textColor="#2e7d32"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (onAddRebound) onAddRebound(player.id);
+                      if (onUpdatePlayerStats) {
+                        onUpdatePlayerStats(player.id, teamId, {
+                          rebonds: (getPlayerStats && getPlayerStats(player.id)?.rebonds || 0) + 1
+                        });
+                      }
+                    }}
+                  >
+                    <FaHandPaper size={12} /> Rebond
+                  </ActionButton>
+                  <ActionButton 
+                    color="#e3f2fd" 
+                    hoverColor="#bbdefb" 
+                    textColor="#1565c0"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (onAddAssist) onAddAssist(player.id);
+                      if (onUpdatePlayerStats) {
+                        onUpdatePlayerStats(player.id, teamId, {
+                          passesDecisives: (getPlayerStats && getPlayerStats(player.id)?.passesDecisives || 0) + 1
+                        });
+                      }
+                    }}
+                  >
+                    <FaPlus size={12} /> Passe
+                  </ActionButton>
+                </PlayerActions>
+              )}
             </PlayerItem>
           ))
         ) : (
