@@ -52,14 +52,16 @@
       "id": "player2",
       "prenom": "Anthony",
       "nom": "Davis",
-      "numero": 3,
+      "numero": 5,
       "equipeId": "team1",
       "photo": "https://via.placeholder.com/150",
       "statistiquesGlobales": {
         "points": 24.2,
         "rebonds": 10.5,
         "passesDecisives": 3.1
-      }
+      },
+      "taille": null,
+      "poids": null
     },
     {
       "id": "player3",
@@ -133,12 +135,32 @@
       },
       "statut": "terminé",
       "periodes": [
-        { "numero": 1, "scoreLocal": 28, "scoreVisiteur": 25 },
-        { "numero": 2, "scoreLocal": 24, "scoreVisiteur": 22 },
-        { "numero": 3, "scoreLocal": 26, "scoreVisiteur": 30 },
-        { "numero": 4, "scoreLocal": 27, "scoreVisiteur": 21 }
+        {
+          "numero": 1,
+          "scoreLocal": 28,
+          "scoreVisiteur": 25
+        },
+        {
+          "numero": 2,
+          "scoreLocal": 24,
+          "scoreVisiteur": 22
+        },
+        {
+          "numero": 3,
+          "scoreLocal": 26,
+          "scoreVisiteur": 30
+        },
+        {
+          "numero": 4,
+          "scoreLocal": 27,
+          "scoreVisiteur": 21
+        }
       ],
-      "evenements": ["event1", "event2", "event3"],
+      "evenements": [
+        "event1",
+        "event2",
+        "event3"
+      ],
       "statistiquesJoueurs": [
         {
           "joueurId": "player3",

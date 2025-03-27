@@ -376,66 +376,66 @@ const PlayerDetail = () => {
   const teams = useSelector(state => state.teams.teams);
   const games = useSelector(state => state.games.games);
   const events = useSelector(state => state.events.events);
-  
+
   const [activeTab, setActiveTab] = useState('stats');
   const [player, setPlayer] = useState(null);
   const [playerTeam, setPlayerTeam] = useState(null);
   const [playerGames, setPlayerGames] = useState([]);
   const [playerShots, setPlayerShots] = useState([]);
-  
+
   useEffect(() => {
     // Trouver le joueur correspondant
     const foundPlayer = players.find(p => p.id === playerId);
     if (foundPlayer) {
       setPlayer(foundPlayer);
-      
+
       // Trouver l'équipe du joueur
       const team = teams.find(t => t.id === foundPlayer.equipeId);
       if (team) {
         setPlayerTeam(team);
       }
-      
+
       // Trouver les matchs du joueur (matchs de son équipe)
       if (foundPlayer.equipeId) {
-        const playerTeamGames = games.filter(game => 
-          game.equipeLocaleId === foundPlayer.equipeId || 
+        const playerTeamGames = games.filter(game =>
+          game.equipeLocaleId === foundPlayer.equipeId ||
           game.equipeVisiteurId === foundPlayer.equipeId
         );
         setPlayerGames(playerTeamGames);
       }
-      
+
       // Trouver les tirs du joueur
-      const shots = events.filter(event => 
-        event.type === 'tir' && 
+      const shots = events.filter(event =>
+        event.type === 'tir' &&
         event.joueurId === playerId
       );
       setPlayerShots(shots);
     }
   }, [playerId, players, teams, games, events]);
-  
+
   // Obtenir le nom de l'équipe à partir de l'ID
   const getTeamName = (teamId) => {
     const team = teams.find(team => team.id === teamId);
     return team ? team.nom : 'Équipe inconnue';
   };
-  
+
   // Obtenir le logo de l'équipe à partir de l'ID
   const getTeamLogo = (teamId) => {
     const team = teams.find(team => team.id === teamId);
     return team ? team.logo : '';
   };
-  
+
   // Formater la date du match
   const formatGameDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
-  
+
   // Déterminer le statut du match
   const getGameStatus = (game) => {
     const now = new Date();
     const gameDate = new Date(game.date);
-    
+
     if (game.termine) {
       return 'terminé';
     } else if (gameDate <= now) {
@@ -444,27 +444,27 @@ const PlayerDetail = () => {
       return 'à venir';
     }
   };
-  
+
   // Calculer les statistiques avancées
   const calculateAdvancedStats = () => {
     if (!player || !playerShots.length) return {};
-    
+
     const totalShots = playerShots.length;
     const madeShots = playerShots.filter(shot => shot.reussi).length;
     const shotPercentage = totalShots > 0 ? (madeShots / totalShots) * 100 : 0;
-    
+
     const twoPointShots = playerShots.filter(shot => shot.typeShot === '2pts');
     const twoPointMade = twoPointShots.filter(shot => shot.reussi).length;
     const twoPointPercentage = twoPointShots.length > 0 ? (twoPointMade / twoPointShots.length) * 100 : 0;
-    
+
     const threePointShots = playerShots.filter(shot => shot.typeShot === '3pts');
     const threePointMade = threePointShots.filter(shot => shot.reussi).length;
     const threePointPercentage = threePointShots.length > 0 ? (threePointMade / threePointShots.length) * 100 : 0;
-    
+
     const freeThrows = playerShots.filter(shot => shot.typeShot === 'lf');
     const freeThrowsMade = freeThrows.filter(shot => shot.reussi).length;
     const freeThrowPercentage = freeThrows.length > 0 ? (freeThrowsMade / freeThrows.length) * 100 : 0;
-    
+
     return {
       totalShots,
       madeShots,
@@ -480,9 +480,9 @@ const PlayerDetail = () => {
       freeThrowPercentage: freeThrowPercentage.toFixed(1)
     };
   };
-  
+
   const advancedStats = calculateAdvancedStats();
-  
+
   if (!player) {
     return (
       <PlayerDetailContainer>
@@ -491,21 +491,21 @@ const PlayerDetail = () => {
       </PlayerDetailContainer>
     );
   }
-  
+
   return (
     <PlayerDetailContainer>
       <BackButton to="/players"><FaArrowLeft /> Retour à la liste des joueurs</BackButton>
-      
+
       <PlayerHeader>
         <PlayerPhoto>
           <img src={player.photo} alt={`Photo ${player.prenom} ${player.nom}`} />
         </PlayerPhoto>
-        
+
         <PlayerInfo>
           <PlayerName>{player.prenom} {player.nom}</PlayerName>
           <PlayerTeam><FaBasketballBall /> {playerTeam ? playerTeam.nom : 'Équipe inconnue'}</PlayerTeam>
-          <PlayerPosition><FaUser /> {player.poste.charAt(0).toUpperCase() + player.poste.slice(1)}</PlayerPosition>
-          
+          <PlayerPosition><FaUser /> {player.poste?.charAt(0).toUpperCase() + player.poste?.slice(1)}</PlayerPosition>
+
           <PlayerStats>
             <StatItem>
               <StatValue>{player.statistiquesGlobales.points}</StatValue>
@@ -521,39 +521,39 @@ const PlayerDetail = () => {
             </StatItem>
           </PlayerStats>
         </PlayerInfo>
-        
+
         <PlayerNumber>#{player.numero}</PlayerNumber>
-        
+
         <PlayerActions>
           <ActionButton to={`/players/${player.id}/edit`}><FaEdit /> Modifier</ActionButton>
         </PlayerActions>
       </PlayerHeader>
-      
+
       <TabsContainer>
-        <Tab 
-          active={activeTab === 'stats'} 
+        <Tab
+          active={activeTab === 'stats'}
           onClick={() => setActiveTab('stats')}
         >
           <FaChartBar /> Statistiques
         </Tab>
-        <Tab 
-          active={activeTab === 'games'} 
+        <Tab
+          active={activeTab === 'games'}
           onClick={() => setActiveTab('games')}
         >
           <FaCalendarAlt /> Matchs
         </Tab>
-        <Tab 
-          active={activeTab === 'shots'} 
+        <Tab
+          active={activeTab === 'shots'}
           onClick={() => setActiveTab('shots')}
         >
           <FaBasketballBall /> Tirs
         </Tab>
       </TabsContainer>
-      
+
       {activeTab === 'stats' && (
         <ContentSection>
           <SectionTitle><FaChartBar /> Statistiques détaillées</SectionTitle>
-          
+
           <StatsGrid>
             <StatCard>
               <StatCardValue>{player.statistiquesGlobales.points}</StatCardValue>
@@ -582,11 +582,11 @@ const PlayerDetail = () => {
           </StatsGrid>
         </ContentSection>
       )}
-      
+
       {activeTab === 'games' && (
         <ContentSection>
           <SectionTitle><FaCalendarAlt /> Matchs récents</SectionTitle>
-          
+
           {playerGames.length > 0 ? (
             <GamesList>
               {playerGames.map(game => (
@@ -594,23 +594,23 @@ const PlayerDetail = () => {
                   <GameDate>
                     <FaCalendarAlt /> {formatGameDate(game.date)}
                   </GameDate>
-                  
+
                   <GameTeams>
                     <GameTeam>
                       <img src={getTeamLogo(game.equipeLocaleId)} alt={getTeamName(game.equipeLocaleId)} />
                       {getTeamName(game.equipeLocaleId)}
                     </GameTeam>
-                    
+
                     <GameScore>
                       {game.termine ? `${game.scoreLocal} - ${game.scoreVisiteur}` : 'VS'}
                     </GameScore>
-                    
+
                     <GameTeam>
                       <img src={getTeamLogo(game.equipeVisiteurId)} alt={getTeamName(game.equipeVisiteurId)} />
                       {getTeamName(game.equipeVisiteurId)}
                     </GameTeam>
                   </GameTeams>
-                  
+
                   <GameStatus status={getGameStatus(game)}>
                     {getGameStatus(game)}
                   </GameStatus>
@@ -622,11 +622,11 @@ const PlayerDetail = () => {
           )}
         </ContentSection>
       )}
-      
+
       {activeTab === 'shots' && (
         <ContentSection>
           <SectionTitle><FaBasketballBall /> Carte des tirs</SectionTitle>
-          
+
           {playerShots.length > 0 ? (
             <ShotChartContainer>
               <StatsGrid>
@@ -647,7 +647,7 @@ const PlayerDetail = () => {
                   <StatCardLabel>Tirs à 3 points</StatCardLabel>
                 </StatCard>
               </StatsGrid>
-              
+
               <EmptyState>Visualisation de la carte des tirs à venir</EmptyState>
             </ShotChartContainer>
           ) : (
