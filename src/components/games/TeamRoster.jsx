@@ -7,14 +7,15 @@ const PlayersList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 300px;
+  max-height: 400px;
   overflow-y: auto;
+  margin-bottom: 20px;
 `;
 
 const PlayerItem = styled.div`
   display: flex;
   align-items: center;
-  padding: 8px;
+  padding: 12px;
   border-radius: 4px;
   background-color: ${props => props.selected ? '#e8f0fe' : '#f8f8f8'};
   border: ${props => props.selected ? '2px solid #1a73e8' : '1px solid #eee'};
@@ -30,6 +31,15 @@ const PlayerItem = styled.div`
 
 const PlayerInfo = styled.div`
   flex: 1;
+  display: flex;
+  flex-direction: column;
+`;
+
+const PlayerHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
 `;
 
 const PlayerName = styled.div`
@@ -40,6 +50,7 @@ const PlayerName = styled.div`
 const PlayerNumber = styled.div`
   font-size: 12px;
   color: #666;
+  margin-left: 8px;
 `;
 
 const PlayerActions = styled.div`
@@ -68,9 +79,48 @@ const ActionButton = styled.button`
 `;
 
 const PlayerStats = styled.div`
-  font-size: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 5px;
+  background-color: #f5f5f5;
+  padding: 6px;
+  border-radius: 4px;
+`;
+
+const StatItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const StatValue = styled.div`
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+`;
+
+const StatLabel = styled.div`
+  font-size: 10px;
   color: #666;
-  margin-top: 2px;
+`;
+
+const DetailedStats = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  margin-top: 5px;
+  font-size: 11px;
+  color: #666;
+`;
+
+const DetailedStatItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #f0f0f0;
+  padding: 4px;
+  border-radius: 3px;
 `;
 
 const TeamRoster = ({ 
@@ -97,6 +147,12 @@ const TeamRoster = ({
     return gameStats.find(stats => stats.joueurId === playerId);
   };
   
+  // Calculer le pourcentage de tirs
+  const calculatePercentage = (made, attempted) => {
+    if (!attempted || attempted === 0) return 0;
+    return Math.round((made / attempted) * 100);
+  };
+  
   return (
     <div>
       <h3 style={{ 
@@ -110,59 +166,113 @@ const TeamRoster = ({
       </h3>
       <PlayersList>
         {teamPlayers && teamPlayers.length > 0 ? (
-          teamPlayers.map(player => (
-            <PlayerItem 
-              key={player.id} 
-              selected={selectedPlayerId === player.id}
-              onClick={() => onPlayerSelect && onPlayerSelect(player.id)}
-            >
-              <PlayerInfo>
-                <PlayerName>{player.prenom} {player.nom}</PlayerName>
-                <PlayerNumber>#{player.numero}</PlayerNumber>
-                {getPlayerStats && getPlayerStats(player.id) && (
-                  <PlayerStats>
-                    {getPlayerStats(player.id).points || 0}pts {getPlayerStats(player.id).rebonds || 0}reb {getPlayerStats(player.id).passesDecisives || 0}pd
-                  </PlayerStats>
-                )}
-              </PlayerInfo>
-              {isLive && (
-                <PlayerActions>
-                  <ActionButton 
-                    color="#e8f5e9" 
-                    hoverColor="#c8e6c9" 
-                    textColor="#2e7d32"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (onAddRebound) onAddRebound(player.id);
-                      if (onUpdatePlayerStats) {
-                        onUpdatePlayerStats(player.id, teamId, {
-                          rebonds: (getPlayerStats && getPlayerStats(player.id)?.rebonds || 0) + 1
-                        });
-                      }
-                    }}
-                  >
-                    <FaHandPaper size={12} /> Rebond
-                  </ActionButton>
-                  <ActionButton 
-                    color="#e3f2fd" 
-                    hoverColor="#bbdefb" 
-                    textColor="#1565c0"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (onAddAssist) onAddAssist(player.id);
-                      if (onUpdatePlayerStats) {
-                        onUpdatePlayerStats(player.id, teamId, {
-                          passesDecisives: (getPlayerStats && getPlayerStats(player.id)?.passesDecisives || 0) + 1
-                        });
-                      }
-                    }}
-                  >
-                    <FaPlus size={12} /> Passe
-                  </ActionButton>
-                </PlayerActions>
-              )}
-            </PlayerItem>
-          ))
+          teamPlayers.map(player => {
+            const stats = getPlayerStats ? getPlayerStats(player.id) : null;
+            const points = stats?.points || 0;
+            const rebounds = stats?.rebonds || 0;
+            const assists = stats?.passesDecisives || 0;
+            
+            // Statistiques détaillées
+            const twoPointsMade = stats?.tirs2ptsReussis || 0;
+            const twoPointsAttempted = stats?.tirs2ptsTentes || 0;
+            const threePointsMade = stats?.tirs3ptsReussis || 0;
+            const threePointsAttempted = stats?.tirs3ptsTentes || 0;
+            const freeThrowsMade = stats?.lfReussis || 0;
+            const freeThrowsAttempted = stats?.lfTentes || 0;
+            
+            // Pourcentages
+            const twoPointsPercentage = calculatePercentage(twoPointsMade, twoPointsAttempted);
+            const threePointsPercentage = calculatePercentage(threePointsMade, threePointsAttempted);
+            const freeThrowsPercentage = calculatePercentage(freeThrowsMade, freeThrowsAttempted);
+            
+            return (
+              <PlayerItem 
+                key={player.id} 
+                selected={selectedPlayerId === player.id}
+                onClick={() => onPlayerSelect && onPlayerSelect(player.id)}
+              >
+                <PlayerInfo>
+                  <PlayerHeader>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <PlayerName>{player.prenom} {player.nom}</PlayerName>
+                      <PlayerNumber>#{player.numero}</PlayerNumber>
+                    </div>
+                    
+                    {isLive && (
+                      <PlayerActions>
+                        <ActionButton 
+                          color="#e8f5e9" 
+                          hoverColor="#c8e6c9" 
+                          textColor="#2e7d32"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (onAddRebound) onAddRebound(player.id);
+                            if (onUpdatePlayerStats) {
+                              onUpdatePlayerStats(player.id, teamId, {
+                                rebonds: (stats?.rebonds || 0) + 1
+                              });
+                            }
+                          }}
+                        >
+                          <FaHandPaper size={12} /> Rebond
+                        </ActionButton>
+                        <ActionButton 
+                          color="#e3f2fd" 
+                          hoverColor="#bbdefb" 
+                          textColor="#1565c0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (onAddAssist) onAddAssist(player.id);
+                            if (onUpdatePlayerStats) {
+                              onUpdatePlayerStats(player.id, teamId, {
+                                passesDecisives: (stats?.passesDecisives || 0) + 1
+                              });
+                            }
+                          }}
+                        >
+                          <FaPlus size={12} /> Passe
+                        </ActionButton>
+                      </PlayerActions>
+                    )}
+                  </PlayerHeader>
+                  
+                  {stats && (
+                    <>
+                      <PlayerStats>
+                        <StatItem>
+                          <StatValue>{points}</StatValue>
+                          <StatLabel>PTS</StatLabel>
+                        </StatItem>
+                        <StatItem>
+                          <StatValue>{rebounds}</StatValue>
+                          <StatLabel>REB</StatLabel>
+                        </StatItem>
+                        <StatItem>
+                          <StatValue>{assists}</StatValue>
+                          <StatLabel>AST</StatLabel>
+                        </StatItem>
+                      </PlayerStats>
+                      
+                      <DetailedStats>
+                        <DetailedStatItem>
+                          <div>{twoPointsMade}/{twoPointsAttempted}</div>
+                          <div>{twoPointsPercentage}% 2P</div>
+                        </DetailedStatItem>
+                        <DetailedStatItem>
+                          <div>{threePointsMade}/{threePointsAttempted}</div>
+                          <div>{threePointsPercentage}% 3P</div>
+                        </DetailedStatItem>
+                        <DetailedStatItem>
+                          <div>{freeThrowsMade}/{freeThrowsAttempted}</div>
+                          <div>{freeThrowsPercentage}% LF</div>
+                        </DetailedStatItem>
+                      </DetailedStats>
+                    </>
+                  )}
+                </PlayerInfo>
+              </PlayerItem>
+            );
+          })
         ) : (
           <div style={{ padding: '20px 0', textAlign: 'center', color: '#666' }}>
             Aucun joueur disponible
