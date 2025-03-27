@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
-import { updateTeam } from '../../store/slices/teamsSlice';
+import { updateTeamAsync } from '../../store/slices/teamsSlice';
 import { FaEdit, FaSave, FaTimes, FaArrowLeft } from 'react-icons/fa';
 
 const FormContainer = styled.div`
@@ -322,11 +322,17 @@ const TeamEditForm = () => {
       return;
     }
     
-    // Mettre à jour l'équipe existante
-    dispatch(updateTeam(formData));
-    
-    // Rediriger vers la page des équipes
-    navigate('/teams');
+    // Mettre à jour l'équipe existante avec l'action asynchrone
+    dispatch(updateTeamAsync({ id: formData.id, team: formData }))
+      .unwrap()
+      .then(() => {
+        // Rediriger vers la page des équipes après succès
+        navigate('/teams');
+      })
+      .catch((error) => {
+        console.error('Erreur lors de la mise à jour de l\'équipe:', error);
+        // Gérer l'erreur si nécessaire
+      });
   };
   
   // Gérer l'annulation du formulaire
