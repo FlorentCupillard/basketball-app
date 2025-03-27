@@ -436,8 +436,8 @@ const GameDetail = () => {
       setGame(foundGame);
       
       // Trouver les équipes
-      const home = teams.find(t => t.id === foundGame.equipeLocaleId);
-      const away = teams.find(t => t.id === foundGame.equipeVisiteurId);
+      const home = teams.find(t => t.id === foundGame.equipeLocale.id);
+      const away = teams.find(t => t.id === foundGame.equipeVisiteur.id);
       setHomeTeam(home);
       setAwayTeam(away);
       
