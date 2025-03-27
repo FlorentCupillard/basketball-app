@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { addGame } from '../../store/slices/gamesSlice';
+import { addGameAsync } from '../../store/slices/gamesSlice';
 import { FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUsers, FaExchangeAlt, FaInfoCircle, FaSave, FaTimes } from 'react-icons/fa';
 
 const FormContainer = styled.div`
@@ -445,11 +445,17 @@ const GameCreateForm = () => {
       statistiquesJoueurs: getInitialPlayerStats(formData.equipeLocaleId, formData.equipeVisiteurId)
     };
     
-    // Dispatcher l'action pour ajouter le match
-    dispatch(addGame(newGame));
-    
-    // Rediriger vers la page des matchs
-    navigate('/games');
+    // Dispatcher l'action asynchrone pour ajouter le match
+    dispatch(addGameAsync(newGame))
+      .unwrap()
+      .then(() => {
+        // Rediriger vers la page des matchs après succès
+        navigate('/games');
+      })
+      .catch((error) => {
+        console.error('Erreur lors de la création du match:', error);
+        // Gérer l'erreur si nécessaire
+      });
   };
   
   // Initialiser les statistiques des joueurs pour les deux équipes

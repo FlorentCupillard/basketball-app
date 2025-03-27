@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
-import { updateGame } from '../../store/slices/gamesSlice';
+import { updateGameAsync } from '../../store/slices/gamesSlice';
 import { FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUsers, FaExchangeAlt, FaInfoCircle, FaSave, FaTimes, FaEdit, FaArrowLeft } from 'react-icons/fa';
 
 const FormContainer = styled.div`
@@ -506,11 +506,17 @@ const GameEditForm = () => {
       statistiquesJoueurs: formData.statistiquesJoueurs || []
     };
     
-    // Dispatcher l'action pour mettre à jour le match
-    dispatch(updateGame(updatedGame));
-    
-    // Rediriger vers la page des matchs
-    navigate('/games');
+    // Dispatcher l'action asynchrone pour mettre à jour le match
+    dispatch(updateGameAsync({ id: updatedGame.id, game: updatedGame }))
+      .unwrap()
+      .then(() => {
+        // Rediriger vers la page des matchs après succès
+        navigate('/games');
+      })
+      .catch((error) => {
+        console.error('Erreur lors de la mise à jour du match:', error);
+        // Gérer l'erreur si nécessaire
+      });
   };
   
   // Gérer l'annulation du formulaire
