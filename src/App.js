@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { FaBars, FaTimes, FaHome, FaUsers, FaBasketballBall, FaChartBar, FaChartLine, FaPlus, FaArrowUp } from 'react-icons/fa';
+import { useDispatch } from 'react-redux';
+import { store, initializeStore } from './store';
 import TeamList from './components/teams/TeamList';
 import TeamCreateForm from './components/teams/TeamCreateForm';
 import TeamEditForm from './components/teams/TeamEditForm';
@@ -392,32 +394,25 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const location = useLocation();
+  const dispatch = useDispatch();
   
-  // Gérer l'ouverture/fermeture du menu
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
+  // Initialiser les données au démarrage de l'application
+  useEffect(() => {
+    // Charger les données depuis l'API
+    initializeStore(store);
+    console.log("Données initialisées depuis l'API");
+  }, []);
+  
+  // Ouvrir le menu mobile
+  const openMenu = () => {
+    setMenuOpen(true);
+    document.body.style.overflow = 'hidden';
   };
   
+  // Fermer le menu mobile
   const closeMenu = () => {
     setMenuOpen(false);
-  };
-  
-  // Déterminer si le bouton d'action flottant doit être affiché
-  const shouldShowFab = () => {
-    const path = location.pathname;
-    if (path === '/teams' || path === '/players' || path === '/games') {
-      return true;
-    }
-    return false;
-  };
-  
-  // Déterminer l'URL du bouton d'action flottant
-  const getFabUrl = () => {
-    const path = location.pathname;
-    if (path === '/teams') return '/teams/create';
-    if (path === '/players') return '/players/create';
-    if (path === '/games') return '/games/create';
-    return '/';
+    document.body.style.overflow = 'auto';
   };
   
   // Gérer le défilement de la page
@@ -461,34 +456,27 @@ function App() {
       <Header>
         <HeaderContent>
           <Logo>
-            <FaBasketballBall /> Basketball Manager
+            <FaBasketballBall /> Basketball Stats
           </Logo>
-          <MenuButton onClick={toggleMenu} aria-label="Menu">
+          <MenuButton onClick={menuOpen ? closeMenu : openMenu}>
             {menuOpen ? <FaTimes /> : <FaBars />}
           </MenuButton>
           <Nav isOpen={menuOpen}>
-            <NavLink to="/" onClick={closeMenu} active={isActive('/')}>
+            <NavLink to="/" active={isActive('/') ? 1 : 0}>
               <FaHome /> Accueil
             </NavLink>
-            <NavLink to="/teams" onClick={closeMenu} active={isActive('/teams')}>
+            <NavLink to="/teams" active={isActive('/teams') ? 1 : 0}>
               <FaUsers /> Équipes
             </NavLink>
-            <NavLink to="/players" onClick={closeMenu} active={isActive('/players')}>
+            <NavLink to="/players" active={isActive('/players') ? 1 : 0}>
               <FaBasketballBall /> Joueurs
             </NavLink>
-            <NavLink to="/games" onClick={closeMenu} active={isActive('/games')}>
+            <NavLink to="/games" active={isActive('/games') ? 1 : 0}>
               <FaChartBar /> Matchs
-            </NavLink>
-            <NavLink to="/stats" onClick={closeMenu} active={isActive('/stats')}>
-              <FaChartLine /> Statistiques
-            </NavLink>
-            <NavLink to="/shot-chart" onClick={closeMenu} active={isActive('/shot-chart')}>
-              <FaChartLine /> Carte des Tirs
             </NavLink>
           </Nav>
         </HeaderContent>
       </Header>
-      
       <Overlay isOpen={menuOpen} onClick={closeMenu} />
       
       <MainContent>
@@ -498,86 +486,76 @@ function App() {
               <PageTitle><FaHome /> Tableau de bord</PageTitle>
               <Dashboard>
                 <DashboardCard>
-                  <DashboardCardTitle><FaChartBar /> Matchs à venir</DashboardCardTitle>
+                  <DashboardCardTitle><FaUsers /> Équipes</DashboardCardTitle>
                   <DashboardCardContent>
-                    <p>Lakers vs Bulls - 25/03/2025 - 20:00</p>
-                    <p>Warriors vs Nets - 26/03/2025 - 19:30</p>
-                    <Link to="/games">Voir tous les matchs</Link>
+                    <p>Gérez les équipes de basketball.</p>
+                    <p>Ajoutez, modifiez ou supprimez des équipes.</p>
+                    <Link to="/teams">Voir toutes les équipes</Link>
                   </DashboardCardContent>
                 </DashboardCard>
                 
                 <DashboardCard>
-                  <DashboardCardTitle><FaChartBar /> Derniers résultats</DashboardCardTitle>
+                  <DashboardCardTitle><FaBasketballBall /> Joueurs</DashboardCardTitle>
                   <DashboardCardContent>
-                    <p>Celtics 105 - 98 Heat - 20/03/2025</p>
-                    <p>Bucks 112 - 89 Raptors - 21/03/2025</p>
-                    <Link to="/games">Voir tous les résultats</Link>
-                  </DashboardCardContent>
-                </DashboardCard>
-                
-                <DashboardCard>
-                  <DashboardCardTitle><FaBasketballBall /> Meilleurs joueurs</DashboardCardTitle>
-                  <DashboardCardContent>
-                    <p>1. LeBron James - 28.5 pts</p>
-                    <p>2. Stephen Curry - 26.3 pts</p>
-                    <p>3. Kevin Durant - 25.9 pts</p>
+                    <p>Gérez les joueurs de basketball.</p>
+                    <p>Ajoutez, modifiez ou supprimez des joueurs.</p>
                     <Link to="/players">Voir tous les joueurs</Link>
                   </DashboardCardContent>
                 </DashboardCard>
+                
+                <DashboardCard>
+                  <DashboardCardTitle><FaChartBar /> Matchs</DashboardCardTitle>
+                  <DashboardCardContent>
+                    <p>Gérez les matchs de basketball.</p>
+                    <p>Créez des matchs et enregistrez les statistiques.</p>
+                    <Link to="/games">Voir tous les matchs</Link>
+                  </DashboardCardContent>
+                </DashboardCard>
               </Dashboard>
-              
-              <DashboardCard>
-                <DashboardCardTitle><FaChartLine /> Carte des tirs récents</DashboardCardTitle>
-                <DashboardCardContent>
-                  <p>Accédez à la carte des tirs pour visualiser les performances de tir des joueurs.</p>
-                  <Link to="/shot-chart">Voir la carte des tirs</Link>
-                </DashboardCardContent>
-              </DashboardCard>
             </>
           } />
+          
+          {/* Routes pour les équipes */}
           <Route path="/teams" element={<TeamList />} />
           <Route path="/teams/create" element={<TeamCreateForm />} />
-          <Route path="/teams/:teamId" element={<TeamDetail />} />
-          <Route path="/teams/:teamId/edit" element={<TeamEditForm />} />
+          <Route path="/teams/:id" element={<TeamDetail />} />
+          <Route path="/teams/:id/edit" element={<TeamEditForm />} />
+          
+          {/* Routes pour les joueurs */}
           <Route path="/players" element={<PlayerList />} />
           <Route path="/players/create" element={<PlayerCreateForm />} />
-          <Route path="/players/:playerId" element={<PlayerDetail />} />
-          <Route path="/players/:playerId/edit" element={<PlayerEditForm />} />
+          <Route path="/players/:id" element={<PlayerDetail />} />
+          <Route path="/players/:id/edit" element={<PlayerEditForm />} />
+          
+          {/* Routes pour les matchs */}
           <Route path="/games" element={<GameList />} />
           <Route path="/games/create" element={<GameCreateForm />} />
-          <Route path="/games/:gameId/edit" element={<GameEditForm />} />
           <Route path="/games/:gameId" element={<GameDetail />} />
+          <Route path="/games/:gameId/edit" element={<GameEditForm />} />
           <Route path="/games/:gameId/live" element={<GameLive />} />
-          <Route path="/stats" element={
-            <div>
-              <PageTitle><FaChartLine /> Statistiques</PageTitle>
-              <p>Cette fonctionnalité sera bientôt disponible.</p>
-            </div>
-          } />
-          <Route path="/shot-chart" element={<ShotChart />} />
+          
+          {/* Route pour le shot chart */}
+          <Route path="/shotchart" element={<ShotChart />} />
         </Routes>
       </MainContent>
       
-      {shouldShowFab() && (
-        <Link to={getFabUrl()}>
-          <FloatingActionButton aria-label="Ajouter">
-            <FaPlus />
-          </FloatingActionButton>
-        </Link>
-      )}
+      <Footer>
+        &copy; {new Date().getFullYear()} Basketball Stats App
+      </Footer>
       
       <ScrollToTopButton 
-        onClick={scrollToTop} 
-        visible={showScrollTop}
-        showFab={shouldShowFab()}
-        aria-label="Remonter en haut"
+        visible={showScrollTop} 
+        onClick={scrollToTop}
+        showFab={location.pathname === '/games'}
       >
         <FaArrowUp />
       </ScrollToTopButton>
       
-      <Footer>
-        <p>© 2025 Basketball Manager - Application développée en React</p>
-      </Footer>
+      {location.pathname === '/games' && (
+        <FloatingActionButton as={Link} to="/games/create">
+          <FaPlus />
+        </FloatingActionButton>
+      )}
     </AppContainer>
   );
 }
