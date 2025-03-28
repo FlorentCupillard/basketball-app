@@ -6,8 +6,11 @@ export const fetchEvents = createAsyncThunk(
   'events/fetchEvents',
   async (_, { rejectWithValue }) => {
     try {
-      return await eventsApi.getAll();
+      const events = await eventsApi.getAll();
+      console.log('Events fetched from API:', events); // Ajout de log pour déboguer
+      return events;
     } catch (error) {
+      console.error('Error fetching events:', error); // Ajout de log d'erreur
       return rejectWithValue(error.message);
     }
   }
@@ -128,13 +131,16 @@ const eventsSlice = createSlice({
       // Gestion de fetchEvents
       .addCase(fetchEvents.pending, (state) => {
         state.status = 'loading';
+        console.log('Events loading...'); // Ajout de log pour déboguer
       })
       .addCase(fetchEvents.fulfilled, (state, action) => {
         state.status = 'succeeded';
+        console.log('Events loaded successfully:', action.payload); // Ajout de log pour déboguer
         state.events = action.payload;
       })
       .addCase(fetchEvents.rejected, (state, action) => {
         state.status = 'failed';
+        console.error('Events loading failed:', action.payload); // Ajout de log d'erreur
         state.error = action.payload;
       })
       // Gestion de fetchEventsByGame

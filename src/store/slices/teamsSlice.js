@@ -6,8 +6,11 @@ export const fetchTeams = createAsyncThunk(
   'teams/fetchTeams',
   async (_, { rejectWithValue }) => {
     try {
-      return await teamsApi.getAll();
+      const teams = await teamsApi.getAll();
+      console.log('Teams fetched from API:', teams); // Ajout de log pour déboguer
+      return teams;
     } catch (error) {
+      console.error('Error fetching teams:', error); // Ajout de log d'erreur
       return rejectWithValue(error.message);
     }
   }
@@ -78,13 +81,16 @@ const teamsSlice = createSlice({
       // Gestion de fetchTeams
       .addCase(fetchTeams.pending, (state) => {
         state.status = 'loading';
+        console.log('Teams loading...'); // Ajout de log pour déboguer
       })
       .addCase(fetchTeams.fulfilled, (state, action) => {
         state.status = 'succeeded';
+        console.log('Teams loaded successfully:', action.payload); // Ajout de log pour déboguer
         state.teams = action.payload;
       })
       .addCase(fetchTeams.rejected, (state, action) => {
         state.status = 'failed';
+        console.error('Teams loading failed:', action.payload); // Ajout de log d'erreur
         state.error = action.payload;
       })
       // Gestion de addTeamAsync

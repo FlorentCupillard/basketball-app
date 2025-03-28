@@ -6,8 +6,11 @@ export const fetchPlayers = createAsyncThunk(
   'players/fetchPlayers',
   async (_, { rejectWithValue }) => {
     try {
-      return await playersApi.getAll();
+      const players = await playersApi.getAll();
+      console.log('Players fetched from API:', players); // Ajout de log pour déboguer
+      return players;
     } catch (error) {
+      console.error('Error fetching players:', error); // Ajout de log d'erreur
       return rejectWithValue(error.message);
     }
   }
@@ -124,13 +127,16 @@ const playersSlice = createSlice({
       // Gestion de fetchPlayers
       .addCase(fetchPlayers.pending, (state) => {
         state.status = 'loading';
+        console.log('Players loading...'); // Ajout de log pour déboguer
       })
       .addCase(fetchPlayers.fulfilled, (state, action) => {
         state.status = 'succeeded';
+        console.log('Players loaded successfully:', action.payload); // Ajout de log pour déboguer
         state.players = action.payload;
       })
       .addCase(fetchPlayers.rejected, (state, action) => {
         state.status = 'failed';
+        console.error('Players loading failed:', action.payload); // Ajout de log d'erreur
         state.error = action.payload;
       })
       // Gestion de fetchPlayersByTeam

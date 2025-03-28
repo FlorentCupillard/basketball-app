@@ -6,8 +6,11 @@ export const fetchGames = createAsyncThunk(
   'games/fetchGames',
   async (_, { rejectWithValue }) => {
     try {
-      return await gamesApi.getAll();
+      const games = await gamesApi.getAll();
+      console.log('Games fetched from API:', games); // Ajout de log pour déboguer
+      return games;
     } catch (error) {
+      console.error('Error fetching games:', error); // Ajout de log d'erreur
       return rejectWithValue(error.message);
     }
   }
@@ -197,13 +200,16 @@ const gamesSlice = createSlice({
       // Gestion de fetchGames
       .addCase(fetchGames.pending, (state) => {
         state.status = 'loading';
+        console.log('Games loading...'); // Ajout de log pour déboguer
       })
       .addCase(fetchGames.fulfilled, (state, action) => {
         state.status = 'succeeded';
+        console.log('Games loaded successfully:', action.payload); // Ajout de log pour déboguer
         state.games = action.payload;
       })
       .addCase(fetchGames.rejected, (state, action) => {
         state.status = 'failed';
+        console.error('Games loading failed:', action.payload); // Ajout de log d'erreur
         state.error = action.payload;
       })
       // Gestion de addGameAsync
