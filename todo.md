@@ -26,10 +26,10 @@
 - [x] Nettoyer le code et supprimer les parties inutilisées
 
 ## Tests
-- [ ] Tester l'application pour s'assurer que toutes les fonctionnalités marchent correctement
-- [ ] Vérifier que les statistiques sont correctement mises à jour
-- [ ] Vérifier que les données sont correctement persistées
+- [x] Tester l'application pour s'assurer que toutes les fonctionnalités marchent correctement
+- [x] Vérifier que les statistiques sont correctement mises à jour
+- [x] Vérifier que les données sont correctement persistées
 
 ## Finalisation
-- [ ] Pousser les modifications sur GitHub
-- [ ] Documenter les changements effectués
+- [x] Pousser les modifications sur GitHub
+- [x] Documenter les changements effectués
