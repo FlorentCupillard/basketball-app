@@ -56,11 +56,23 @@ const PlayerNumber = styled.div`
 const PlayerActions = styled.div`
   display: flex;
   gap: 5px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 `;
 
 const ActionButton = styled.button`
-  background-color: ${props => props.color || '#f0f0f0'};
-  color: ${props => props.textColor || '#333'};
+  background-color: ${props => {
+    if (props.primary) return '#1a73e8';
+    if (props.success) return '#4caf50';
+    if (props.info) return '#2196f3';
+    if (props.warning) return '#ff9800';
+    if (props.danger) return '#f44336';
+    return props.color || '#f0f0f0';
+  }};
+  color: ${props => {
+    if (props.primary || props.success || props.info || props.warning || props.danger) return 'white';
+    return props.textColor || '#333';
+  }};
   border: none;
   border-radius: 4px;
   padding: 5px 8px;
@@ -74,7 +86,14 @@ const ActionButton = styled.button`
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    background-color: ${props => props.hoverColor || '#e0e0e0'};
+    background-color: ${props => {
+      if (props.primary) return '#1557b0';
+      if (props.success) return '#388e3c';
+      if (props.info) return '#0d47a1';
+      if (props.warning) return '#f57c00';
+      if (props.danger) return '#d32f2f';
+      return props.hoverColor || '#e0e0e0';
+    }};
   }
 `;
 
@@ -123,15 +142,17 @@ const DetailedStatItem = styled.div`
   border-radius: 3px;
 `;
 
+const ShotButtonsRow = styled.div`
+  display: flex;
+  gap: 5px;
+  margin-top: 5px;
+  justify-content: center;
+`;
+
 const TeamRoster = ({ 
-  title, 
-  titleColor, 
   teamId,
   selectedPlayerId, 
-  onPlayerSelect, 
-  onAddRebound, 
-  onAddAssist,
-  gameStats,
+  onPlayerSelect,
   isLive,
   onUpdatePlayerStats
 }) => {
@@ -141,12 +162,6 @@ const TeamRoster = ({
   // Filtrer les joueurs par équipe si teamId est fourni
   const teamPlayers = teamId ? allPlayers.filter(player => player.equipeId === teamId) : [];
   
-  // Fonction pour obtenir les statistiques d'un joueur
-  const getPlayerStats = (playerId) => {
-    if (!gameStats) return null;
-    return gameStats.find(stats => stats.joueurId === playerId);
-  };
-  
   // Calculer le pourcentage de tirs
   const calculatePercentage = (made, attempted) => {
     if (!attempted || attempted === 0) return 0;
@@ -155,30 +170,21 @@ const TeamRoster = ({
   
   return (
     <div>
-      <h3 style={{ 
-        fontSize: '16px', 
-        margin: '0 0 10px 0', 
-        paddingBottom: '10px', 
-        borderBottom: '1px solid #eee',
-        color: titleColor || '#333' 
-      }}>
-        {title}
-      </h3>
       <PlayersList>
         {teamPlayers && teamPlayers.length > 0 ? (
           teamPlayers.map(player => {
-            const stats = getPlayerStats ? getPlayerStats(player.id) : null;
-            const points = stats?.points || 0;
-            const rebounds = stats?.rebonds || 0;
-            const assists = stats?.passesDecisives || 0;
+            const stats = player.statistiquesMatch || {};
+            const points = stats.points || 0;
+            const rebounds = stats.rebonds || 0;
+            const assists = stats.passes || 0;
             
             // Statistiques détaillées
-            const twoPointsMade = stats?.tirs2ptsReussis || 0;
-            const twoPointsAttempted = stats?.tirs2ptsTentes || 0;
-            const threePointsMade = stats?.tirs3ptsReussis || 0;
-            const threePointsAttempted = stats?.tirs3ptsTentes || 0;
-            const freeThrowsMade = stats?.lfReussis || 0;
-            const freeThrowsAttempted = stats?.lfTentes || 0;
+            const twoPointsMade = stats.tirs2ptsReussis || 0;
+            const twoPointsAttempted = stats.tirs2ptsTentes || 0;
+            const threePointsMade = stats.tirs3ptsReussis || 0;
+            const threePointsAttempted = stats.tirs3ptsTentes || 0;
+            const freeThrowsMade = stats.lfReussis || 0;
+            const freeThrowsAttempted = stats.lfTentes || 0;
             
             // Pourcentages
             const twoPointsPercentage = calculatePercentage(twoPointsMade, twoPointsAttempted);
@@ -197,77 +203,67 @@ const TeamRoster = ({
                       <PlayerName>{player.prenom} {player.nom}</PlayerName>
                       <PlayerNumber>#{player.numero}</PlayerNumber>
                     </div>
-                    
-                    {isLive && (
-                      <PlayerActions>
-                        <ActionButton 
-                          color="#e8f5e9" 
-                          hoverColor="#c8e6c9" 
-                          textColor="#2e7d32"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (onAddRebound) onAddRebound(player.id);
-                            if (onUpdatePlayerStats) {
-                              onUpdatePlayerStats(player.id, teamId, {
-                                rebonds: (stats?.rebonds || 0) + 1
-                              });
-                            }
-                          }}
-                        >
-                          <FaHandPaper size={12} /> Rebond
-                        </ActionButton>
-                        <ActionButton 
-                          color="#e3f2fd" 
-                          hoverColor="#bbdefb" 
-                          textColor="#1565c0"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (onAddAssist) onAddAssist(player.id);
-                            if (onUpdatePlayerStats) {
-                              onUpdatePlayerStats(player.id, teamId, {
-                                passesDecisives: (stats?.passesDecisives || 0) + 1
-                              });
-                            }
-                          }}
-                        >
-                          <FaPlus size={12} /> Passe
-                        </ActionButton>
-                      </PlayerActions>
-                    )}
                   </PlayerHeader>
                   
-                  {stats && (
-                    <>
-                      <PlayerStats>
-                        <StatItem>
-                          <StatValue>{points}</StatValue>
-                          <StatLabel>PTS</StatLabel>
-                        </StatItem>
-                        <StatItem>
-                          <StatValue>{rebounds}</StatValue>
-                          <StatLabel>REB</StatLabel>
-                        </StatItem>
-                        <StatItem>
-                          <StatValue>{assists}</StatValue>
-                          <StatLabel>AST</StatLabel>
-                        </StatItem>
-                      </PlayerStats>
-                      
-                      <DetailedStats>
-                        <DetailedStatItem>
-                          <div>{twoPointsMade}/{twoPointsAttempted}</div>
-                          <div>{twoPointsPercentage}% 2P</div>
-                        </DetailedStatItem>
-                        <DetailedStatItem>
-                          <div>{threePointsMade}/{threePointsAttempted}</div>
-                          <div>{threePointsPercentage}% 3P</div>
-                        </DetailedStatItem>
-                        <DetailedStatItem>
-                          <div>{freeThrowsMade}/{freeThrowsAttempted}</div>
-                          <div>{freeThrowsPercentage}% LF</div>
-                        </DetailedStatItem>
-                      </DetailedStats>
-                    </>
+                  <PlayerStats>
+                    <StatItem>
+                      <StatValue>{points}</StatValue>
+                      <StatLabel>PTS</StatLabel>
+                    </StatItem>
+                    <StatItem>
+                      <StatValue>{rebounds}</StatValue>
+                      <StatLabel>REB</StatLabel>
+                    </StatItem>
+                    <StatItem>
+                      <StatValue>{assists}</StatValue>
+                      <StatLabel>AST</StatLabel>
+                    </StatItem>
+                  </PlayerStats>
+                  
+                  <DetailedStats>
+                    <DetailedStatItem>
+                      <div>{twoPointsMade}/{twoPointsAttempted}</div>
+                      <div>{twoPointsPercentage}% 2P</div>
+                    </DetailedStatItem>
+                    <DetailedStatItem>
+                      <div>{threePointsMade}/{threePointsAttempted}</div>
+                      <div>{threePointsPercentage}% 3P</div>
+                    </DetailedStatItem>
+                    <DetailedStatItem>
+                      <div>{freeThrowsMade}/{freeThrowsAttempted}</div>
+                      <div>{freeThrowsPercentage}% LF</div>
+                    </DetailedStatItem>
+                  </DetailedStats>
+                  
+                  {isLive && selectedPlayerId === player.id && (
+                    <ShotButtonsRow>
+                      <ActionButton 
+                        success
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onUpdatePlayerStats) {
+                            onUpdatePlayerStats(player.id, teamId, {
+                              rebonds: (stats.rebonds || 0) + 1,
+                            });
+                          }
+                        }}
+                      >
+                        <FaHandPaper size={12} /> Rbds
+                      </ActionButton>
+                      <ActionButton 
+                        info
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onUpdatePlayerStats) {
+                            onUpdatePlayerStats(player.id, teamId, {
+                              passes: (stats.passes || 0) + 1,
+                            });
+                          }
+                        }}
+                      >
+                        <FaPlus size={12} /> Pass
+                      </ActionButton>
+                    </ShotButtonsRow>
                   )}
                 </PlayerInfo>
               </PlayerItem>

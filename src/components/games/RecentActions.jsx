@@ -7,6 +7,8 @@ const RecentActionsContainer = styled.div`
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 15px;
+  max-height: 400px;
+  overflow-y: auto;
 `;
 
 const RecentActionsTitle = styled.h3`
@@ -34,16 +36,45 @@ const ActionItem = styled.li`
   }
 `;
 
+const ShotActionItem = styled(ActionItem)`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const ShotIndicator = styled.div`
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: ${props => props.success ? '#4caf50' : '#f44336'};
+  flex-shrink: 0;
+`;
+
 const RecentActions = ({ events, formatEvent }) => {
+  // Trier les événements par date (du plus récent au plus ancien)
+  const sortedEvents = [...events].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  
   return (
     <RecentActionsContainer>
-      <RecentActionsTitle>Dernières actions</RecentActionsTitle>
+      <RecentActionsTitle>Toutes les actions</RecentActionsTitle>
       <ActionsList>
-        {events.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 10).map((event, index) => (
-          <ActionItem key={index}>
-            {formatEvent(event)}
-          </ActionItem>
-        ))}
+        {sortedEvents.slice(0, 20).map((event, index) => {
+          // Vérifier si c'est un événement de tir
+          if (event.type === 'tir') {
+            return (
+              <ShotActionItem key={index}>
+                <ShotIndicator success={event.details?.reussi} />
+                {formatEvent(event)}
+              </ShotActionItem>
+            );
+          }
+          
+          return (
+            <ActionItem key={index}>
+              {formatEvent(event)}
+            </ActionItem>
+          );
+        })}
         
         {events.length === 0 && (
           <div style={{ padding: '20px 0', textAlign: 'center', color: '#666' }}>

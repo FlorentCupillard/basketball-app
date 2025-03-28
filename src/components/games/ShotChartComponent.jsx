@@ -10,6 +10,7 @@ const CourtContainer = styled.div`
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: ${props => props.isSelecting ? 'crosshair' : 'default'};
 `;
 
 const ShotMarker = styled.div`
@@ -89,88 +90,71 @@ const ShotInstructions = styled.div`
   }
 `;
 
-const RadioGroup = styled.div`
+const ShotLegend = styled.div`
   display: flex;
   gap: 15px;
   margin-bottom: 15px;
+  justify-content: center;
+  font-size: 12px;
 `;
 
-const RadioLabel = styled.label`
+const LegendItem = styled.div`
   display: flex;
   align-items: center;
   gap: 5px;
-  cursor: pointer;
 `;
 
-const Button = styled.button`
-  background-color: ${props => props.primary ? '#1a73e8' : '#f0f0f0'};
-  color: ${props => props.primary ? 'white' : '#333'};
-  border: none;
-  border-radius: 4px;
-  padding: 8px 16px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  
-  &:hover {
-    background-color: ${props => props.primary ? '#1557b0' : '#e0e0e0'};
-  }
-  
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+const LegendMarker = styled.div`
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: ${props => props.color};
+  border: 1px solid white;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
 `;
 
-const ShotChart = ({
+const ShotChartComponent = ({
   shotEvents,
   isSelectingPosition,
   shotPosition,
   shotResult,
   selectedPlayerId,
   players,
-  onCourtClick,
-  onShotResultChange
+  onCourtClick
 }) => {
   const selectedPlayer = players.find(p => p.id === selectedPlayerId);
+  
+  // Transformer les événements de tir pour l'affichage
+  const displayShots = shotEvents.map(event => ({
+    positionX: event.details?.positionX || 50,
+    positionY: event.details?.positionY || 50,
+    reussi: event.details?.reussi || false,
+    joueurId: event.joueurId
+  }));
 
   return (
-    <div style={{ flex: 2, display: 'flex', flexDirection: 'column', gap: '15px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <RadioGroup>
-          <RadioLabel>
-            <input
-              type="radio"
-              name="shotResult"
-              value="made"
-              checked={shotResult === 'made'}
-              onChange={onShotResultChange}
-            />
-            Réussi
-          </RadioLabel>
-          <RadioLabel>
-            <input
-              type="radio"
-              name="shotResult"
-              value="missed"
-              checked={shotResult === 'missed'}
-              onChange={onShotResultChange}
-            />
-            Manqué
-          </RadioLabel>
-        </RadioGroup>
-      </div>
-
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '15px' }}>
       <ShotInstructions isSelecting={isSelectingPosition}>
         {isSelectingPosition
           ? `Cliquez sur le terrain pour indiquer la position du tir de ${selectedPlayer?.prenom} ${selectedPlayer?.nom}`
-          : 'Sélectionnez un joueur dans la liste pour enregistrer un tir'}
+          : 'Sélectionnez un joueur et un type de tir pour enregistrer une action'}
       </ShotInstructions>
 
-      <CourtContainer onClick={onCourtClick}>
-        <BasketballCourt>
+      <ShotLegend>
+        <LegendItem>
+          <LegendMarker color="green" />
+          <span>Tir réussi</span>
+        </LegendItem>
+        <LegendItem>
+          <LegendMarker color="red" />
+          <span>Tir manqué</span>
+        </LegendItem>
+      </ShotLegend>
+
+      <CourtContainer onClick={onCourtClick} isSelecting={isSelectingPosition}>
+        <BasketballCourt interactive={isSelectingPosition}>
           {/* Afficher les tirs déjà enregistrés */}
-          {shotEvents.map((shot, index) => (
+          {displayShots.map((shot, index) => (
             <ShotMarker
               key={index}
               x={shot.positionX}
@@ -184,13 +168,13 @@ const ShotChart = ({
             <ShotMarker
               x={shotPosition.x}
               y={shotPosition.y}
-              made={shotResult === 'made'}
+              made={true}
               isTemp={true}
             />
           )}
 
           {/* Afficher le curseur de position */}
-          {isSelectingPosition && (
+          {isSelectingPosition && !shotPosition && (
             <TempPositionMarker />
           )}
         </BasketballCourt>
@@ -199,4 +183,4 @@ const ShotChart = ({
   );
 };
 
-export default ShotChart;
+export default ShotChartComponent;
